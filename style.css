@@ -1,162 +1,269 @@
+/* ================================
+   MDR-Zucht – Paarungsanalyse Design
+   ================================ */
+
+/* --- Grundlayout --- */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f5f9f9;
+  font-family: "Segoe UI", Arial, sans-serif;
   margin: 0;
+  padding: 0;
+  background: #f3f8ef;
   color: #222;
 }
 
 header {
   background: #6b9d00;
   color: white;
-  padding: 1.2rem;
   text-align: center;
-  font-size: 1.6rem;
+  padding: 1.5rem;
+  border-bottom: 4px solid #4f7300;
 }
 
-.warning {
-  background: #ffefef;
-  color: #a40000;
-  padding: 1rem;
-  margin: 1rem;
-  border-left: 5px solid #a40000;
-  border-radius: 8px;
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
 }
 
-.infobox {
-  background: #e9f5ff;
-  border-left: 5px solid #4ca3ff;
-  margin: 1rem;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.tabs {
+/* --- Hauptinhalt --- */
+main {
   display: flex;
-  background: #cde8ff;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* --- Auswahlbereich --- */
+.selection {
+  background: #e9f5e0;
+  border: 1px solid #6b9d00;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.dropdowns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.select-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.select-group label {
+  font-weight: 600;
+  color: #2b4000;
+}
+
+select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #6b9d00;
+  border-radius: 6px;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: #4f7300;
+}
+
+.btn {
+  background: #6b9d00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 600;
+}
+
+.btn:hover {
+  background: #558000;
+}
+
+/* --- Ergebnisse --- */
+.results .card {
+  background: #f8fcf5;
+  border: 1px solid #cfe8b8;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.results h3 {
+  color: #558000;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.results h3 .badge {
+  background: #cfe8b8;
+  color: #2b4000;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.results p {
+  margin: 0.3rem 0 0.8rem;
+}
+
+.toplist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toplist li {
+  background: #eef9ff;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #c6e7f5;
+  transition: background 0.2s;
+}
+
+.toplist li:hover {
+  background: #def3ff;
+}
+
+.medal {
+  margin-right: 0.4rem;
+  font-size: 1.2rem;
+}
+
+.score {
+  font-weight: 600;
+  color: #004c6d;
+  white-space: nowrap;
+}
+
+/* --- Infobox mit Tabs --- */
+.info-box {
+  background: #f7fefc;
+  border: 1px solid #a3d2d9;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 2px solid #a3d2d9;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .tab {
-  flex: 1;
-  padding: 10px;
-  text-align: center;
+  background: transparent;
   border: none;
-  cursor: pointer;
-  background: #cde8ff;
   font-weight: bold;
-  color: #004e7a;
-  transition: background 0.3s;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  color: #004c6d;
+  transition: 0.2s;
+  border-radius: 8px 8px 0 0;
 }
 
 .tab:hover {
-  background: #b5defe;
+  background: #e0f7ff;
 }
 
 .tab.active {
-  background: #6b9d00;
-  color: white;
+  background: #a3e0f0;
+  color: #002a3d;
 }
 
 .tab-content {
   display: none;
-  padding: 1rem 1.5rem;
+  padding-top: 0.5rem;
 }
 
 .tab-content.active {
   display: block;
 }
 
-.tab-content table {
+.info-box h2 {
+  color: #004c6d;
+  margin-top: 0;
+}
+
+.info-box ul {
+  list-style: disc;
+  margin-left: 1.5rem;
+}
+
+.warning {
+  background: #ffe9e9;
+  border-left: 6px solid #d10000;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  color: #6d0000;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+/* --- Tabelle in Info --- */
+.score-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.8rem 0;
+  margin-top: 1rem;
+  font-size: 0.95rem;
 }
 
-.tab-content td, .tab-content th {
-  border: 1px solid #bcd;
-  padding: 6px 10px;
+.score-table th,
+.score-table td {
+  border: 1px solid #c0e5f2;
+  padding: 0.5rem;
+  text-align: left;
 }
 
-#controls {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 1rem;
+.score-table th {
+  background: #e0f7ff;
+  color: #003b54;
 }
 
-#controls select, #controls button {
-  padding: 8px 12px;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-#controls button {
-  background: #6b9d00;
-  color: white;
-  cursor: pointer;
-}
-
-#results {
-  max-width: 900px;
-  margin: auto;
-  padding: 1rem;
-}
-
-.card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom: 1.5rem;
-  padding: 1rem 1.5rem;
-}
-
-.card h3 {
-  color: #4c8c00;
-  margin-bottom: 0.2rem;
-}
-
-.badge {
-  background: #cfe8a0;
-  color: #2d4a00;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  margin-left: 6px;
-}
-
-.toplist {
-  list-style: none;
-  padding: 0;
-}
-
-.toplist li {
-  background: #f5faff;
-  border: 1px solid #dbe8ef;
-  margin: 0.5rem 0;
-  padding: 0.6rem 0.8rem;
-  border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.medal {
-  margin-right: 8px;
-  font-size: 1.3rem;
-}
-
-.score {
-  font-weight: bold;
-  color: #005b8f;
-}
-
+/* --- Footer --- */
 footer {
   text-align: center;
   padding: 1rem;
-  background: #e0f0ff;
-  color: #333;
-  font-size: 0.9rem;
-  margin-top: 2rem;
-  border-top: 1px solid #bcd;
+  background: #6b9d00;
+  color: white;
+  border-radius: 10px 10px 0 0;
+  font-weight: 500;
+}
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .dropdowns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn {
+    width: 100%;
+  }
+  .results h3 {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .toplist li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
 }
