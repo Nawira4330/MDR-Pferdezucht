@@ -12,25 +12,7 @@
   </header>
 
   <main>
-    <!-- Auswahlbereich -->
-    <section class="selection">
-      <div class="dropdowns">
-        <div class="select-group">
-          <label for="mareSelect">Stute auswählen:</label>
-          <select id="mareSelect"></select>
-        </div>
-        <div class="select-group">
-          <label for="ownerSelect">Besitzer auswählen:</label>
-          <select id="ownerSelect"></select>
-        </div>
-        <button id="showAll" class="btn">Alle anzeigen</button>
-      </div>
-    </section>
-
-    <!-- Ergebnisse -->
-    <section id="results" class="results"></section>
-
-    <!-- Infobox (einklappbar) -->
+    <!-- Infobox zuerst -->
     <section class="info-box">
       <button id="toggleInfo" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
       <div id="infoContainer" class="info-content hidden">
@@ -79,14 +61,27 @@
             <tr><td>100 – 199</td><td>Genetisch eher ungünstig</td></tr>
             <tr><td>0 – 99</td><td>Nicht empfohlen</td></tr>
           </table>
-
-          <p>
-            Ein ℹ️-Icon neben einem Hengst zeigt künftig detailliert, 
-            wie sich der Score aus den einzelnen Merkmalen zusammensetzt.
-          </p>
         </div>
       </div>
     </section>
+
+    <!-- Auswahlbereich unter der Infobox -->
+    <section class="selection">
+      <div class="dropdowns">
+        <div class="select-group">
+          <label for="mareSelect">Stute auswählen:</label>
+          <select id="mareSelect"></select>
+        </div>
+        <div class="select-group">
+          <label for="ownerSelect">Besitzer auswählen:</label>
+          <select id="ownerSelect"></select>
+        </div>
+        <button id="showAll" class="btn">Alle anzeigen</button>
+      </div>
+    </section>
+
+    <!-- Ergebnisse -->
+    <section id="results" class="results"></section>
   </main>
 
   <footer>
