@@ -24,12 +24,12 @@ const MERKMALE = [
   "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
 ];
 
-// === CSV Parser robust ===
+// === CSV robust laden + Schlüssel bereinigen ===
 async function ladeCSV(url) {
   const res = await fetch(url);
   const text = await res.text();
   const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/\uFEFF/g, ""));
+  const headers = lines[0].split(",").map(h => h.trim().replace(/\uFEFF/g, "").replace(/\s+/g, ""));
   const rows = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -38,30 +38,31 @@ async function ladeCSV(url) {
     for (let c of line) {
       if (c === '"') inQuotes = !inQuotes;
       else if (c === "," && !inQuotes) {
-        fields.push(field.trim()); field = "";
+        fields.push(field.trim());
+        field = "";
       } else field += c;
     }
     fields.push(field.trim());
 
     const obj = {};
     headers.forEach((h, j) => {
-      const key = h.trim();
-      obj[key] = fields[j] || "";
+      obj[h] = (fields[j] || "").trim();
     });
     rows.push(obj);
   }
   return rows;
 }
 
-// === Genetik Parser (ignoriert Leerzeichen & "|") ===
+// === Genetik Parser ===
+// -> Ignoriert Leerzeichen, Trenner & "|" und zerlegt erst im Code in 8 Paare
 function parseGeneString(str) {
   if (!str) return [];
-  const clean = str.replace(/\s+/g, "").replace(/\|/g, "");
-  const pairs = clean.match(/.{2}/g);
-  return pairs || [];
+  const clean = str.replace(/\s+/g, "").replace(/\|/g, "").trim();
+  if (clean.length < 16) return []; // 8 Paare à 2 Zeichen = 16
+  return clean.match(/.{2}/g).slice(0, 8); // nur erste 8 Paare
 }
 
-// === Scoretabelle ===
+// === Bewertungs-Tabellen ===
 const FRONT_SCORE = {
   "HH-HH":4,"HH-Hh":3,"HH-hh":2,
   "Hh-HH":3,"Hh-Hh":2,"Hh-hh":1,
@@ -73,7 +74,7 @@ const BACK_SCORE = {
   "hh-HH":2,"hh-Hh":3,"hh-hh":4
 };
 
-// === Allelenkombis (ein H von jedem Elternteil) ===
+// === Allelenkombis (je 1 H/h von beiden Elternteilen) ===
 function getFoalCombos(mare, stallion) {
   const allelesMare = mare.split("");
   const allelesStallion = stallion.split("");
@@ -82,19 +83,22 @@ function getFoalCombos(mare, stallion) {
   return results;
 }
 
-// === Scoreberechnung pro Stute/Hengst ===
+// === Scoreberechnung ===
 function berechneScore(stute, hengst) {
   let best = 0, worst = 0;
 
   for (const merk of MERKMALE) {
-    const sGenes = parseGeneString(stute[merk]);
-    const hGenes = parseGeneString(hengst[merk]);
+    // Robust gegen Leerzeichen in Spaltennamen
+    const sVal = stute[merk] || stute[merk.replace(/\s+/g, "")] || "";
+    const hVal = hengst[merk] || hengst[merk.replace(/\s+/g, "")] || "";
 
-    // ignorieren falls unvollständig
+    const sGenes = parseGeneString(sVal);
+    const hGenes = parseGeneString(hVal);
+
     if (sGenes.length !== 8 || hGenes.length !== 8) continue;
 
     for (let i = 0; i < 8; i++) {
-      const isFront = i < 4;
+      const isFront = i < 4; // erste 4 = HH-Ziel, letzte 4 = hh-Ziel
       const table = isFront ? FRONT_SCORE : BACK_SCORE;
       const combos = getFoalCombos(sGenes[i], hGenes[i]);
       const scores = combos.map(c => table[c] ?? 0);
@@ -140,7 +144,6 @@ function zeigeVorschlaege() {
   else mares = stuten;
 
   mares.forEach(stute => {
-    // 💡 jetzt individuelle Berechnung
     const scored = hengste.map(h => {
       const { best, worst } = berechneScore(stute, h);
       return { ...h, best, worst };
@@ -178,10 +181,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   stuten = await ladeCSV(STUTEN_URL);
   hengste = await ladeCSV(HENGSTE_URL);
 
-  // Debug: prüfe ob Daten korrekt geladen
-  console.log("✅ Beispiel Stute:", stuten[0]);
-  console.log("✅ Beispiel Hengst:", hengste[0]);
-  console.log("✅ Kopf-Gene:", parseGeneString(stuten[0]?.Kopf));
+  // Debug-Ausgabe zur Kontrolle
+  console.log("✅ Erste Stute:", stuten[0]);
+  console.log("✅ Erste Hengst:", hengste[0]);
+  console.log("✅ Kopf-Gene Stute:", parseGeneString(stuten[0]?.Kopf));
+  console.log("✅ Kopf-Gene Hengst:", parseGeneString(hengste[0]?.Kopf));
 
   fuelleDropdowns();
 });
