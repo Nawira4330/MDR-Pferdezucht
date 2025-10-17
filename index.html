@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MDR Zucht — Top-3 Hengste pro Stute</title>
+  <title>Paarungsanalyse – Exterieur-Matching</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="site-header">
-    <h1>MDR Zucht — Hengstempfehlung</h1>
-    <button id="infoToggle" class="info-button" aria-expanded="false" aria-controls="infoBox">ℹ️ Info</button>
+    <h1>Paarungsanalyse – Exterieur-Matching</h1>
   </header>
 
-  <section id="infoBox" class="info-box" hidden>
+  <!-- Infofenster dauerhaft sichtbar -->
+  <section id="infoBox" class="info-box">
     <div class="info-content">
       <h2>Info zur Berechnung der Hengste</h2>
       <p>
@@ -23,15 +23,13 @@
       <ul>
         <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
         <li>Schwächen werden möglichst ausgeglichen</li>
-        <li>Score basiert auf Front- und Back-Genetik nach Matrix (siehe unten)</li>
+        <li>Score basiert auf Front- und Back-Genetik nach Matrix</li>
       </ul>
 
       <h3>Score-Berechnung und Interpretation</h3>
       <p>
-        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz,
-        Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung,
-        Fesseln, Hufe) werden die <strong>8 Gen-Paare</strong> (4 vorne, 4 hinten) bewertet.
-        Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
+        Für jedes der <strong>14 Exterieurmerkmale</strong> werden die <strong>8 Gen-Paare</strong> (4 vorne, 4 hinten)
+        bewertet. Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
         (8 Paare × 4 Punkte; 14 Merkmale × 32 Punkte = <strong>448</strong> Gesamtpunkte).
       </p>
 
@@ -71,7 +69,7 @@
   </main>
 
   <footer>
-    <p>© 2025 MDR Zucht — Genetische Anpaarungsvorschläge</p>
+    <p>© 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung</p>
   </footer>
 
   <script src="app.js"></script>
