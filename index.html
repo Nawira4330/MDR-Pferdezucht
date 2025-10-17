@@ -9,102 +9,71 @@
 <body>
   <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
+    <div class="warning-box">
+      ⚠️ <strong>Hinweis:</strong> Inzucht und Doppelvererbung des Overo-Gens werden nicht berücksichtigt.
+    </div>
   </header>
 
-  <!-- ⚠️ Dauerhafte Warnung unter der Überschrift -->
-  <section class="warning-section">
-    ⚠️ <strong>Achtung:</strong> Inzucht und doppelte Vererbung des Overo-Gens werden
-    <strong>nicht berücksichtigt</strong>. Diese Analyse bewertet ausschließlich das
-    Exterieur der Tiere nach genetischen Merkmalen.
+  <!-- Info-Reiter -->
+  <section class="info-box">
+    <button id="toggleInfo" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
+    <div id="infoTabs" class="hidden">
+      <div class="tabs">
+        <button class="tab active" data-tab="tab1">Info zur Berechnung</button>
+        <button class="tab" data-tab="tab2">Score-Berechnung & Interpretation</button>
+      </div>
+      <div id="tab1" class="tab-content active">
+        <h2>Info zur Berechnung der Hengste</h2>
+        <p>
+          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.  
+          Ziel ist das Fohlen mit dem Idealwert <strong>HH HH HH HH | hh hh hh hh</strong>.
+        </p>
+        <ul>
+          <li>Vordere 4 Paare → HH (Ziel: Kraft, Aufrichtung)</li>
+          <li>Hintere 4 Paare → hh (Ziel: Harmonie, Balance)</li>
+          <li>Jede Paarung wird genetisch bewertet, um optimale Ergänzungen zu finden.</li>
+        </ul>
+      </div>
+      <div id="tab2" class="tab-content">
+        <h3>Score-Berechnung & Interpretation</h3>
+        <p>
+          Für jedes der 14 Exterieur-Merkmale (Kopf → Hufe) werden 8 Gen-Paare bewertet.  
+          Pro Paar sind 4 Punkte möglich → max. 32 pro Merkmal → 448 Gesamt.
+        </p>
+        <table>
+          <tr><th>Score</th><th>Bewertung</th></tr>
+          <tr><td>400 – 448</td><td>Nahezu perfekte Kombination</td></tr>
+          <tr><td>300 – 400</td><td>Sehr gute, empfohlene Paarung</td></tr>
+          <tr><td>200 – 300</td><td>Solide Kombination mit Potenzial</td></tr>
+          <tr><td>100 – 200</td><td>Genetisch eher ungünstig</td></tr>
+          <tr><td>0 – 100</td><td>Nicht empfohlen</td></tr>
+        </table>
+      </div>
+    </div>
   </section>
 
-  <main>
-    <!-- Infobox -->
-    <section class="info-box">
-      <button id="toggleInfo" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
-      <div id="infoContainer" class="info-content hidden">
-        <div class="tab-header">
-          <button class="tab active" data-tab="info">Info zur Berechnung der Hengste</button>
-          <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
-        </div>
-
-        <div id="info" class="tab-content active">
-          <h2>Info zur Berechnung der Hengste</h2>
-          <p>
-            Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale
-            ausgewählt. Ziel ist es, dass das Fohlen dem Idealwert
-            <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
-          </p>
-          <ul>
-            <li>Stärken der Stute (vorne HH) werden unterstützt</li>
-            <li>Schwächen (hinten hh) werden ausgeglichen</li>
-            <li>Bewertung pro Gen-Paar nach genetischer Tabelle</li>
-          </ul>
-        </div>
-
-        <div id="score" class="tab-content">
-          <h2>Score-Berechnung & Interpretation</h2>
-          <p>
-            Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals,
-            Halsansatz, Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe,
-            Beinwinkelung, Beinstellung, Fesseln, Hufe) werden acht Gen-Paare
-            verglichen – vier vorne (HH-Ziel) und vier hinten (hh-Ziel).
-          </p>
-          <p>
-            Jedes Paar kann <strong>0–4 Punkte</strong> erreichen. Ein Merkmal
-            erreicht maximal 32 Punkte (8 Paare × 4). Insgesamt also
-            <strong>max. 448 Punkte</strong> über alle Merkmale.
-          </p>
-
-          <table class="score-table">
-            <tr><th>Gesamtscore</th><th>Bedeutung</th></tr>
-            <tr><td>400 – 448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-            <tr><td>300 – 399</td><td>Sehr gute Kombination, empfohlen</td></tr>
-            <tr><td>200 – 299</td><td>Solide Kombination mit Potenzial</td></tr>
-            <tr><td>100 – 199</td><td>Genetisch eher ungünstig</td></tr>
-            <tr><td>0 – 99</td><td>Nicht empfohlen</td></tr>
-          </table>
-
-          <p>
-            Ein ℹ️-Icon neben einem Hengst zeigt künftig detailliert, wie sich der
-            Score aus den einzelnen Merkmalen zusammensetzt.
-          </p>
-        </div>
-      </div>
-    </section>
-
-<!-- Auswahlbereich -->
-<section class="selection">
-  <div class="dropdowns">
-    <div class="select-group">
-      <label for="mareSelect">Stute auswählen:</label>
-      <select id="mareSelect"></select>
-    </div>
-    <div class="select-group">
-      <label for="ownerSelect">Besitzer auswählen:</label>
-      <select id="ownerSelect"></select>
-    </div>
-
-    <!-- Sortierungsauswahl -->
-    <div class="select-group">
-      <label for="sortSelect">Sortierung:</label>
+  <!-- Auswahl -->
+  <section id="controls">
+    <label>Stute auswählen:
+      <select id="mareSelect"><option>– Stute wählen –</option></select>
+    </label>
+    <label>Besitzer auswählen:
+      <select id="ownerSelect"><option>– Besitzer wählen –</option></select>
+    </label>
+    <label>Sortierung:
       <select id="sortSelect">
+        <option value="range">Kleinste Range (Differenz)</option>
         <option value="best">Bester Score (Best)</option>
         <option value="worst">Bester Score (Worst)</option>
-        <option value="range">Kleinste Range (Differenz)</option>
       </select>
-    </div>
+    </label>
+    <button id="showAll">Alle anzeigen</button>
+  </section>
 
-    <button id="showAll" class="btn">Alle anzeigen</button>
-  </div>
-</section>
-
-    <!-- Ergebnisse -->
-    <section id="results" class="results"></section>
-  </main>
+  <main id="results"></main>
 
   <footer>
-    <p>@ 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung</p>
+    @ 2025 MDR-Zucht | Entwickelt mit 💚 für die Zuchtplanung
   </footer>
 
   <script src="app.js"></script>
