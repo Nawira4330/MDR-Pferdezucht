@@ -10,22 +10,38 @@ const MERKMALE = [
   "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
 ];
 
-// CSV einlesen
+// CSV laden (robust, auch bei Anführungszeichen)
 async function ladeCSV(url) {
   const res = await fetch(url);
   const text = await res.text();
-  const [header, ...rows] = text.trim().split(/\r?\n/).map(r => r.split(","));
-  return rows.map(r => Object.fromEntries(header.map((h, i) => [h.trim(), (r[i] || "").trim()])));
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+  const headers = lines[0].split(",").map(h => h.trim());
+  const rows = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    let inQuotes = false, field = "", fields = [];
+    for (let c of line) {
+      if (c === '"') inQuotes = !inQuotes;
+      else if (c === "," && !inQuotes) {
+        fields.push(field.trim()); field = "";
+      } else field += c;
+    }
+    fields.push(field.trim());
+    const obj = {};
+    headers.forEach((h, j) => obj[h] = fields[j] || "");
+    rows.push(obj);
+  }
+  return rows;
 }
 
-// Genetik-Parsing: Leerzeichen & "|" ignorieren → in 8 Paare splitten
+// Genetik-Paare erkennen
 function parseGeneString(str) {
   if (!str) return [];
   const clean = str.replace(/\s+/g, "").replace("|", "");
   return clean.match(/.{2}/g) || [];
 }
 
-// Punktetabellen
 const FRONT_SCORE = {
   "HH-HH":4,"HH-Hh":3,"HH-hh":2,
   "Hh-HH":3,"Hh-Hh":2,"Hh-hh":1,
@@ -37,7 +53,6 @@ const BACK_SCORE = {
   "hh-HH":2,"hh-Hh":3,"hh-hh":4
 };
 
-// mögliche Kind-Genpaare bilden (Vererbung)
 function getFoalCombos(mare, stallion) {
   const allelesMare = mare.split("");
   const allelesStallion = stallion.split("");
@@ -46,7 +61,6 @@ function getFoalCombos(mare, stallion) {
   return results;
 }
 
-// Score-Berechnung
 function berechneScore(stute, hengst) {
   let best = 0, worst = 0;
   for (const merk of MERKMALE) {
@@ -55,10 +69,10 @@ function berechneScore(stute, hengst) {
     if (sGenes.length !== 8 || hGenes.length !== 8) continue;
 
     for (let i = 0; i < 8; i++) {
-      const front = i < 4;
-      const scoreTable = front ? FRONT_SCORE : BACK_SCORE;
+      const isFront = i < 4;
+      const table = isFront ? FRONT_SCORE : BACK_SCORE;
       const combos = getFoalCombos(sGenes[i], hGenes[i]);
-      const scores = combos.map(c => scoreTable[c] ?? 0);
+      const scores = combos.map(c => table[c] ?? 0);
       best += Math.max(...scores);
       worst += Math.min(...scores);
     }
@@ -117,7 +131,7 @@ function zeigeVorschlaege() {
             <li>
               <span class="medal">${["🥇","🥈","🥉"][i]}</span>
               ${h.Name} <span class="badge">${h.Farbgenetik}</span>
-              <span class="score">Score: ${h.best} / ${h.worst}</span>
+              <span class="score">Fohlen: Best ${h.best} / Worst ${h.worst}</span>
             </li>
           `).join("")}
         </ul>
