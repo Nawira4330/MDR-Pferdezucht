@@ -9,28 +9,27 @@
 <body>
   <header class="site-header">
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
+    <p class="subtitle">Top-3 Hengste für jede Stute basierend auf genetischer Fohlenanalyse</p>
   </header>
 
-  <!-- Infofenster dauerhaft sichtbar -->
-  <section id="infoBox" class="info-box">
-    <div class="info-content">
-      <h2>Info zur Berechnung der Hengste</h2>
+  <!-- Info- und Warnbereich -->
+  <section class="info-section">
+    <div class="info-box">
+      <h2>ℹ️ Info zur Berechnung</h2>
       <p>
-        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
-        Ziel ist es, dass das Fohlen den Idealwert
-        <strong>HH HH HH HH | hh hh hh hh</strong> erreicht:
+        Die Top-3 Hengste für jede Stute werden anhand der <strong>Exterieur-Merkmale</strong> bewertet.  
+        Ziel ist, dass das Fohlen dem Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
       </p>
       <ul>
-        <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
-        <li>Schwächen werden möglichst ausgeglichen</li>
-        <li>Score basiert auf Front- und Back-Genetik nach Matrix</li>
+        <li>Stärken der Stute (HH vorne, hh hinten) werden unterstützt</li>
+        <li>Schwächen werden gezielt ausgeglichen</li>
+        <li>Berechnung basiert auf genetischer Fohlen-Simulation</li>
       </ul>
 
-      <h3>Score-Berechnung und Interpretation</h3>
+      <h3>Score-Bewertung</h3>
       <p>
-        Für jedes der <strong>14 Exterieurmerkmale</strong> werden die <strong>8 Gen-Paare</strong> (4 vorne, 4 hinten)
-        bewertet. Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
-        (8 Paare × 4 Punkte; 14 Merkmale × 32 Punkte = <strong>448</strong> Gesamtpunkte).
+        Für jedes der <strong>14 Exterieur-Merkmale</strong> werden die 8 Gen-Paare (4 vorne, 4 hinten) bewertet.  
+        Ein Merkmal erreicht maximal <strong>32 Punkte</strong>. Gesamt-Maximalwert: <strong>448 Punkte</strong>.
       </p>
 
       <table class="score-table">
@@ -38,12 +37,13 @@
         <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
         <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
         <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
-        <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
+        <tr><td>100–200</td><td>Eher ungünstig</td></tr>
         <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
       </table>
 
       <div class="warning">
-        ⚠️ Hinweis: Inzucht und die Vererbung des Overo-Gens werden hier nicht berücksichtigt.
+        ⚠️ <strong>Wichtiger Hinweis:</strong><br>
+        Inzucht und die Vererbung des <strong>Overo-Gens</strong> werden derzeit <u>nicht</u> berücksichtigt.
       </div>
     </div>
   </section>
@@ -51,11 +51,11 @@
   <main>
     <section class="controls">
       <div class="control">
-        <label for="mareSelect">Stute:</label>
+        <label for="mareSelect">Stute wählen:</label>
         <select id="mareSelect"></select>
       </div>
       <div class="control">
-        <label for="ownerSelect">Besitzer:</label>
+        <label for="ownerSelect">Besitzer wählen:</label>
         <select id="ownerSelect"></select>
       </div>
       <div class="control">
@@ -64,7 +64,7 @@
     </section>
 
     <section id="results" class="results">
-      <p class="hint">Wähle eine Stute oder einen Besitzer — oder klicke „Alle anzeigen“.</p>
+      <p class="hint">Bitte eine Stute oder einen Besitzer auswählen, um Vorschläge zu sehen.</p>
     </section>
   </main>
 
