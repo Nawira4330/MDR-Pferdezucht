@@ -2,17 +2,18 @@
 // Paarungsanalyse – MDR-Zucht 2025
 // ===============================
 
-// Google Sheets CSV URLs
+// CSV URLs
 const STUTEN_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZE4HXc1di-ym2n79-_9Rc-vxHbMMniRXmgq1woBSha0MjvANgvYFoqH4w7E2LA/pub?output=csv";
 const HENGSTE_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvyxHFLsRMdLYcZR6VhzhDDHJX46TLp3WMUslb53ij2zzAY7R2o9rZjVHpani0cA/pub?output=csv";
 
-// Globale Variablen
 let mares = [];
 let stallions = [];
 
-// =============== CSV LADEN ===============
+// ===============================
+// CSV LADEN
+// ===============================
 async function loadCSV(url) {
   const response = await fetch(url);
   const text = await response.text();
@@ -30,9 +31,11 @@ async function loadCSV(url) {
     });
 }
 
-// =============== INIT ===============
 async function init() {
-  [mares, stallions] = await Promise.all([loadCSV(STUTEN_URL), loadCSV(HENGSTE_URL)]);
+  [mares, stallions] = await Promise.all([
+    loadCSV(STUTEN_URL),
+    loadCSV(HENGSTE_URL),
+  ]);
   populateDropdowns();
   document.getElementById("mareSelect").addEventListener("change", showSelectedMare);
   document.getElementById("ownerSelect").addEventListener("change", showByOwner);
@@ -41,7 +44,9 @@ async function init() {
   setupInfoToggle();
 }
 
-// =============== DROPDOWNS ===============
+// ===============================
+// DROPDOWNS
+// ===============================
 function populateDropdowns() {
   const mareSelect = document.getElementById("mareSelect");
   const ownerSelect = document.getElementById("ownerSelect");
@@ -50,10 +55,9 @@ function populateDropdowns() {
   ownerSelect.innerHTML = '<option value="">– Besitzer wählen –</option>';
 
   const owners = new Set();
-
   mares.forEach((mare) => {
-    const name = mare["Name"]?.trim();
-    const owner = mare["Besitzer"]?.trim();
+    const name = mare["Name"];
+    const owner = mare["Besitzer"];
     if (name) {
       const opt = document.createElement("option");
       opt.value = name;
@@ -71,7 +75,9 @@ function populateDropdowns() {
   });
 }
 
-// =============== ANZEIGE ===============
+// ===============================
+// AUSWAHL
+// ===============================
 function showSelectedMare() {
   const mareName = document.getElementById("mareSelect").value;
   if (!mareName) return;
@@ -80,87 +86,77 @@ function showSelectedMare() {
 }
 
 function showByOwner() {
-  const ownerName = document.getElementById("ownerSelect").value;
-  if (!ownerName) return;
-  const owned = mares.filter((m) => m["Besitzer"] === ownerName);
-  displayResults(owned);
+  const owner = document.getElementById("ownerSelect").value;
+  if (!owner) return;
+  const list = mares.filter((m) => m["Besitzer"] === owner);
+  displayResults(list);
 }
 
 function showAllResults() {
   displayResults(mares);
 }
 
-// =============== SCORE-BERECHNUNG ===============
-function calculateBestWorstScore(mare, stallion) {
+// ===============================
+// SCORE-LOGIK
+// ===============================
+function calculatePairScore(isFront, m, s) {
+  if (!m || !s) return { best: 0, worst: 0 };
+  m = m.toUpperCase();
+  s = s.toUpperCase();
+
+  const allCombos = [];
+  for (const a of m.split("")) {
+    for (const b of s.split("")) {
+      allCombos.push(a + b);
+    }
+  }
+
+  const frontTable = {
+    "HH": 4, "Hh": 3, "hH": 3, "hh": 2,
+  };
+  const backTable = {
+    "HH": 0, "Hh": 1, "hH": 1, "hh": 4,
+  };
+
+  const table = isFront ? frontTable : backTable;
+  const values = allCombos.map((c) => table[c] || 0);
+  return { best: Math.max(...values), worst: Math.min(...values) };
+}
+
+function calculateScores(mare, stallion) {
   const traits = [
-    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter", "Brust", "Rückenlinie",
-    "Rückenlänge", "Kruppe", "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
+    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter",
+    "Brust", "Rückenlinie", "Rückenlänge", "Kruppe",
+    "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe",
   ];
 
-  let bestTotal = 0;
-  let worstTotal = 0;
+  let best = 0;
+  let worst = 0;
 
   for (const trait of traits) {
     const mareVal = (mare[trait] || "").replace(/\s+/g, "");
     const stallionVal = (stallion[trait] || "").replace(/\s+/g, "");
     if (!mareVal.includes("|") || !stallionVal.includes("|")) continue;
 
-    const [mareFront, mareBack] = mareVal.split("|");
-    const [stallionFront, stallionBack] = stallionVal.split("|");
+    const [mFront, mBack] = mareVal.split("|");
+    const [sFront, sBack] = stallionVal.split("|");
 
-    const marePairs = (mareFront.match(/.{1,2}/g) || []).concat(mareBack.match(/.{1,2}/g) || []);
-    const stallionPairs = (stallionFront.match(/.{1,2}/g) || []).concat(stallionBack.match(/.{1,2}/g) || []);
-
-    let traitBest = 0;
-    let traitWorst = 0;
+    const marePairs = (mFront.match(/.{1,2}/g) || []).concat(mBack.match(/.{1,2}/g) || []);
+    const stallionPairs = (sFront.match(/.{1,2}/g) || []).concat(sBack.match(/.{1,2}/g) || []);
 
     for (let i = 0; i < 8; i++) {
-      const m = marePairs[i];
-      const s = stallionPairs[i];
-      const { best, worst } = scorePairBestWorst(i < 4, m, s);
-      traitBest += best;
-      traitWorst += worst;
-    }
-
-    bestTotal += traitBest;
-    worstTotal += traitWorst;
-  }
-
-  return { bestTotal, worstTotal };
-}
-
-// Bewertung einzelner Genpaare (beste + schlechteste mögliche Kombination)
-function scorePairBestWorst(isFront, m, s) {
-  if (!m || !s) return { best: 0, worst: 0 };
-
-  // Alle möglichen Weitergaben (z. B. Hh → H oder h)
-  const mareGenes = m.split("");
-  const stallionGenes = s.split("");
-
-  const combinations = [];
-  for (const ma of mareGenes) {
-    for (const st of stallionGenes) {
-      combinations.push(ma + st);
+      const { best: b, worst: w } = calculatePairScore(i < 4, marePairs[i], stallionPairs[i]);
+      best += b;
+      worst += w;
     }
   }
 
-  const tableFront = {
-    "HH": 4, "Hh": 3, "hH": 3, "hh": 2 // vorne HH-Ziel
-  };
-  const tableBack = {
-    "HH": 0, "Hh": 1, "hH": 1, "hh": 4 // hinten hh-Ziel
-  };
-
-  const table = isFront ? tableFront : tableBack;
-  const scores = combinations.map((g) => table[g] ?? 0);
-
-  return {
-    best: Math.max(...scores),
-    worst: Math.min(...scores)
-  };
+  return { best, worst };
 }
 
-// =============== TOP 3 ANZEIGE ===============
+// ===============================
+// ANZEIGE
+// ===============================
 function displayResults(list) {
   const container = document.getElementById("results");
   container.innerHTML = "";
@@ -169,39 +165,32 @@ function displayResults(list) {
     const mareCard = document.createElement("div");
     mareCard.classList.add("card");
 
-    const title = document.createElement("h3");
-    title.innerHTML = `${mare["Name"]} <span class="badge">${mare["Farbgenetik"] || "-"}</span>`;
-    mareCard.appendChild(title);
+    mareCard.innerHTML = `
+      <h3>${mare["Name"]} <span class="badge">${mare["Farbgenetik"] || "-"}</span></h3>
+      <p><strong>Besitzer:</strong> ${mare["Besitzer"] || "-"}</p>
+    `;
 
-    const owner = document.createElement("p");
-    owner.innerHTML = `<strong>Besitzer:</strong> ${mare["Besitzer"] || "-"}`;
-    mareCard.appendChild(owner);
-
-    // individuelle Scores für alle Hengste
     const scored = stallions.map((stallion) => {
-      const { bestTotal, worstTotal } = calculateBestWorstScore(mare, stallion);
+      const { best, worst } = calculateScores(mare, stallion);
       return {
         name: stallion["Name"],
         color: stallion["Farbgenetik"],
-        best: bestTotal,
-        worst: worstTotal
+        best,
+        worst,
       };
     });
 
-    // Top 3 nach bestem Score
     const top3 = scored.sort((a, b) => b.best - a.best).slice(0, 3);
-
+    const medals = ["🥇", "🥈", "🥉"];
     const ul = document.createElement("ul");
     ul.classList.add("toplist");
-
-    const medals = ["🥇", "🥈", "🥉"];
 
     top3.forEach((h, i) => {
       const li = document.createElement("li");
       li.innerHTML = `
         <span><span class="medal">${medals[i]}</span>${h.name}</span>
         <span>
-          <span class="badge">${h.color || "-"}</span> 
+          <span class="badge">${h.color || "-"}</span>
           <span class="score">Fohlen: Best ${h.best} / Worst ${h.worst}</span>
         </span>`;
       ul.appendChild(li);
@@ -212,7 +201,9 @@ function displayResults(list) {
   });
 }
 
-// =============== INFOBOX LOGIK ===============
+// ===============================
+// INFOBOX
+// ===============================
 function setupTabs() {
   const tabs = document.querySelectorAll(".tab");
   tabs.forEach((tab) => {
@@ -236,5 +227,4 @@ function setupInfoToggle() {
   });
 }
 
-// =============== START ===============
 init();
