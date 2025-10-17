@@ -37,11 +37,21 @@ async function init() {
     loadCSV(HENGSTE_URL),
   ]);
   populateDropdowns();
+  setupTabs();
+  setupInfoToggle();
+
   document.getElementById("mareSelect").addEventListener("change", showSelectedMare);
   document.getElementById("ownerSelect").addEventListener("change", showByOwner);
   document.getElementById("showAll").addEventListener("click", showAllResults);
-  setupTabs();
-  setupInfoToggle();
+
+  // 🆕 Neu: Sortiermenü reagiert live
+  document.getElementById("sortSelect").addEventListener("change", () => {
+    const mareName = document.getElementById("mareSelect").value;
+    const owner = document.getElementById("ownerSelect").value;
+    if (mareName) showSelectedMare();
+    else if (owner) showByOwner();
+    else showAllResults();
+  });
 }
 
 // ===============================
@@ -99,14 +109,16 @@ function showAllResults() {
 // ===============================
 // SCORE-LOGIK
 // ===============================
+
 function calculatePairScore(isFront, m, s) {
   if (!m || !s) return { best: 0, worst: 0 };
   m = m.toUpperCase();
   s = s.toUpperCase();
 
+  // Alle möglichen Gen-Kombinationen
   const allCombos = [];
-  for (const a of m.split("")) {
-    for (const b of s.split("")) {
+  for (const a of m) {
+    for (const b of s) {
       allCombos.push(a + b);
     }
   }
@@ -141,6 +153,7 @@ function calculateScores(mare, stallion) {
     const [mFront, mBack] = mareVal.split("|");
     const [sFront, sBack] = stallionVal.split("|");
 
+    // In 2er-Paare zerlegen
     const marePairs = (mFront.match(/.{1,2}/g) || []).concat(mBack.match(/.{1,2}/g) || []);
     const stallionPairs = (sFront.match(/.{1,2}/g) || []).concat(sBack.match(/.{1,2}/g) || []);
 
@@ -161,6 +174,8 @@ function displayResults(list) {
   const container = document.getElementById("results");
   container.innerHTML = "";
 
+  const sortOption = document.getElementById("sortSelect")?.value || "best";
+
   list.forEach((mare) => {
     const mareCard = document.createElement("div");
     mareCard.classList.add("card");
@@ -177,10 +192,20 @@ function displayResults(list) {
         color: stallion["Farbgenetik"],
         best,
         worst,
+        range: best - worst,
       };
     });
 
-    const top3 = scored.sort((a, b) => b.best - a.best).slice(0, 3);
+    // Sortierung nach Auswahl
+    scored.sort((a, b) => {
+      if (sortOption === "best") return b.best - a.best;
+      if (sortOption === "worst") return b.worst - a.worst;
+      if (sortOption === "range") return a.range - b.range;
+      return 0;
+    });
+
+    const top3 = scored.slice(0, 3);
+
     const medals = ["🥇", "🥈", "🥉"];
     const ul = document.createElement("ul");
     ul.classList.add("toplist");
@@ -191,7 +216,10 @@ function displayResults(list) {
         <span><span class="medal">${medals[i]}</span>${h.name}</span>
         <span>
           <span class="badge">${h.color || "-"}</span>
-          <span class="score">Fohlen: Best ${h.best} / Worst ${h.worst}</span>
+          <span class="score">
+            Best: ${h.best} / Worst: ${h.worst} 
+            <span class="range">Δ${h.range}</span>
+          </span>
         </span>`;
       ul.appendChild(li);
     });
