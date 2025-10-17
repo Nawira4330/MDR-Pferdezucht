@@ -1,75 +1,107 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
+
+  <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
-    <p class="subtitle">Top-3 Hengste für jede Stute basierend auf genetischer Fohlenanalyse</p>
   </header>
 
-  <!-- Info- und Warnbereich -->
-  <section class="info-section">
-    <div class="info-box">
-      <h2>ℹ️ Info zur Berechnung</h2>
+  <section class="warning">
+    ⚠️ <strong>Wichtiger Hinweis:</strong>  
+    Diese Analyse berücksichtigt keine Inzuchtverhältnisse oder die Vererbung des Overo-Gens.
+  </section>
+
+  <!-- Neue Infobox mit Tabs -->
+  <section class="infobox">
+    <div class="tabs">
+      <button class="tab active" data-tab="info">Info zur Berechnung</button>
+      <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
+    </div>
+
+    <div class="tab-content active" id="info">
+      <h2>Info zur Berechnung der Hengste</h2>
       <p>
-        Die Top-3 Hengste für jede Stute werden anhand der <strong>Exterieur-Merkmale</strong> bewertet.  
-        Ziel ist, dass das Fohlen dem Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
+        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale bewertet.  
+        Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> erreicht.
       </p>
       <ul>
-        <li>Stärken der Stute (HH vorne, hh hinten) werden unterstützt</li>
-        <li>Schwächen werden gezielt ausgeglichen</li>
-        <li>Berechnung basiert auf genetischer Fohlen-Simulation</li>
+        <li>Vordere 4 Gen-Paare: sollen HH ergeben</li>
+        <li>Hintere 4 Gen-Paare: sollen hh ergeben</li>
+        <li>Die Werte werden über 14 Merkmale hinweg analysiert</li>
       </ul>
-
-      <h3>Score-Bewertung</h3>
       <p>
-        Für jedes der <strong>14 Exterieur-Merkmale</strong> werden die 8 Gen-Paare (4 vorne, 4 hinten) bewertet.  
-        Ein Merkmal erreicht maximal <strong>32 Punkte</strong>. Gesamt-Maximalwert: <strong>448 Punkte</strong>.
+        Für jedes Merkmal werden die 8 Gen-Paare von Stute und Hengst kombiniert,  
+        um den genetischen Idealwert des Fohlens zu berechnen.  
+        Dabei wird jedes mögliche Allelenpaar (H oder h) simuliert.
+      </p>
+    </div>
+
+    <div class="tab-content" id="score">
+      <h2>Score-Berechnung und Interpretation</h2>
+      <p>
+        Jedes Merkmal hat 8 Gen-Paare.  
+        Für jede Kombination von Stute und Hengst werden alle möglichen Fohlen-Gene berechnet  
+        und nach folgender Tabelle bewertet:
       </p>
 
-      <table class="score-table">
-        <tr><th>Score</th><th>Bedeutung</th></tr>
-        <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-        <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
-        <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
-        <tr><td>100–200</td><td>Eher ungünstig</td></tr>
-        <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
+      <h3>Vordere Paare (Ziel: HH)</h3>
+      <table>
+        <tr><td>HH–HH</td><td>4</td></tr>
+        <tr><td>HH–Hh</td><td>3</td></tr>
+        <tr><td>HH–hh</td><td>2</td></tr>
+        <tr><td>Hh–HH</td><td>3</td></tr>
+        <tr><td>Hh–Hh</td><td>2</td></tr>
+        <tr><td>Hh–hh</td><td>1</td></tr>
+        <tr><td>hh–HH</td><td>2</td></tr>
+        <tr><td>hh–Hh</td><td>1</td></tr>
+        <tr><td>hh–hh</td><td>0</td></tr>
       </table>
 
-      <div class="warning">
-        ⚠️ <strong>Wichtiger Hinweis:</strong><br>
-        Inzucht und die Vererbung des <strong>Overo-Gens</strong> werden derzeit <u>nicht</u> berücksichtigt.
-      </div>
+      <h3>Hintere Paare (Ziel: hh)</h3>
+      <table>
+        <tr><td>HH–HH</td><td>0</td></tr>
+        <tr><td>HH–Hh</td><td>1</td></tr>
+        <tr><td>HH–hh</td><td>2</td></tr>
+        <tr><td>Hh–HH</td><td>1</td></tr>
+        <tr><td>Hh–Hh</td><td>2</td></tr>
+        <tr><td>Hh–hh</td><td>3</td></tr>
+        <tr><td>hh–HH</td><td>2</td></tr>
+        <tr><td>hh–Hh</td><td>3</td></tr>
+        <tr><td>hh–hh</td><td>4</td></tr>
+      </table>
+
+      <h3>Interpretation</h3>
+      <table>
+        <tr><th>Scorebereich</th><th>Bedeutung</th></tr>
+        <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
+        <tr><td>300–400</td><td>Sehr gute Kombination</td></tr>
+        <tr><td>200–300</td><td>Solide Kombination</td></tr>
+        <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
+        <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
+      </table>
     </div>
   </section>
 
-  <main>
-    <section class="controls">
-      <div class="control">
-        <label for="mareSelect">Stute wählen:</label>
-        <select id="mareSelect"></select>
-      </div>
-      <div class="control">
-        <label for="ownerSelect">Besitzer wählen:</label>
-        <select id="ownerSelect"></select>
-      </div>
-      <div class="control">
-        <button id="showAll">Alle anzeigen</button>
-      </div>
-    </section>
+  <section id="controls">
+    <select id="mareSelect">
+      <option value="">-- Stute auswählen --</option>
+    </select>
+    <select id="ownerSelect">
+      <option value="">-- Besitzer auswählen --</option>
+    </select>
+    <button id="showAll">Alle anzeigen</button>
+  </section>
 
-    <section id="results" class="results">
-      <p class="hint">Bitte eine Stute oder einen Besitzer auswählen, um Vorschläge zu sehen.</p>
-    </section>
-  </main>
+  <main id="results"></main>
 
   <footer>
-    <p>© 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung</p>
+    © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
   </footer>
 
   <script src="app.js"></script>
