@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MDR Zucht — Top-3 Hengste pro Stute</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>MDR Zucht — Hengstempfehlung</h1>
+    <button id="infoToggle" class="info-button" aria-expanded="false" aria-controls="infoBox">ℹ️ Info</button>
+  </header>
+
+  <section id="infoBox" class="info-box" hidden>
+    <div class="info-content">
+      <h2>Info zur Berechnung der Hengste</h2>
+      <p>
+        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
+        Ziel ist es, dass das Fohlen den Idealwert
+        <strong>HH HH HH HH | hh hh hh hh</strong> erreicht:
+      </p>
+      <ul>
+        <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
+        <li>Schwächen werden möglichst ausgeglichen</li>
+        <li>Score basiert auf Front- und Back-Genetik nach Matrix (siehe unten)</li>
+      </ul>
+
+      <h3>Score-Berechnung und Interpretation</h3>
+      <p>
+        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz,
+        Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung,
+        Fesseln, Hufe) werden die <strong>8 Gen-Paare</strong> (4 vorne, 4 hinten) bewertet.
+        Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
+        (8 Paare × 4 Punkte; 14 Merkmale × 32 Punkte = <strong>448</strong> Gesamtpunkte).
+      </p>
+
+      <table class="score-table">
+        <tr><th>Score</th><th>Bedeutung</th></tr>
+        <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
+        <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
+        <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
+        <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
+        <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
+      </table>
+
+      <div class="warning">
+        ⚠️ Hinweis: Inzucht und die Vererbung des Overo-Gens werden hier nicht berücksichtigt.
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="controls">
+      <div class="control">
+        <label for="mareSelect">Stute:</label>
+        <select id="mareSelect"></select>
+      </div>
+      <div class="control">
+        <label for="ownerSelect">Besitzer:</label>
+        <select id="ownerSelect"></select>
+      </div>
+      <div class="control">
+        <button id="showAll">Alle anzeigen</button>
+      </div>
+    </section>
+
+    <section id="results" class="results">
+      <p class="hint">Wähle eine Stute oder einen Besitzer — oder klicke „Alle anzeigen“.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 MDR Zucht — Genetische Anpaarungsvorschläge</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
