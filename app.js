@@ -94,59 +94,74 @@ function showAllResults() {
   displayResults(mares);
 }
 
-// ========================================
-// Genetik-Berechnung
-// ========================================
+// ===============================
+// SCORE-LOGIK (Korrigiert)
+// ===============================
 
-// Punktetabellen
-const FRONT_SCORES = {
-  "HHHH": 4, "HHHh": 3, "HhHH": 3, "HHhh": 2,
-  "HhHh": 2, "Hhhh": 1, "hhHH": 2, "hhHh": 1, "hhhh": 0,
-};
-const BACK_SCORES = {
-  "HHHH": 0, "HHHh": 1, "HhHH": 1, "HHhh": 2,
-  "HhHh": 2, "Hhhh": 3, "hhHH": 2, "hhHh": 3, "hhhh": 4,
+// Bewertungstabellen für einzelne Gen-Paare (nur 2 Zeichen!)
+const FRONT_TABLE = {
+  "HHHH": 4, "HHHh": 3, "HHhh": 2,
+  "HhHH": 3, "HhHh": 2, "Hhhh": 1,
+  "hhHH": 2, "hhHh": 1, "hhhh": 0
 };
 
-// Alle möglichen Fohlenkombinationen
-function offspringCombos(stute, hengst) {
+const BACK_TABLE = {
+  "HHHH": 0, "HHHh": 1, "HHhh": 2,
+  "HhHH": 1, "HhHh": 2, "Hhhh": 3,
+  "hhHH": 2, "hhHh": 3, "hhhh": 4
+};
+
+// erzeugt alle möglichen Genkombinationen (2 Zeichen pro Elter)
+function offspringPairs(stute, hengst) {
   const combos = [];
-  for (const s of stute) {
-    for (const h of hengst) {
-      combos.push(s + h);
+  for (const a of stute) {
+    for (const b of hengst) {
+      combos.push(a + b); // z. B. Hh, hH, hh, HH
     }
   }
   return combos;
 }
 
+// bewertet eine Paarung (Stute/Hengst)
 function pairScore(isFront, stutePair, hengstPair) {
-  const combos = offspringCombos(stutePair, hengstPair);
-  const table = isFront ? FRONT_SCORES : BACK_SCORES;
-  const scores = combos.map(c => table[c] ?? 0);
+  const combos = offspringPairs(stutePair, hengstPair);
+  const table = isFront ? FRONT_TABLE : BACK_TABLE;
+  const scores = combos.map(c => table[c + c] ?? table[c] ?? 0);
   return { best: Math.max(...scores), worst: Math.min(...scores) };
 }
 
-function calcScores(mare, stallion) {
-  const traits = ["Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust",
-                  "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"];
-  let best = 0, worst = 0;
-  for (const t of traits) {
-    const mVal = (mare[t] || "").replace(/\s+/g, "");
-    const hVal = (stallion[t] || "").replace(/\s+/g, "");
-    if (!mVal.includes("|") || !hVal.includes("|")) continue;
+function calculateScores(mare, stallion) {
+  const traits = [
+    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
+    "Brust","Rückenlinie","Rückenlänge","Kruppe",
+    "Beinwinkelung","Beinstellung","Fesseln","Hufe"
+  ];
 
-    const [mf, mb] = mVal.split("|");
-    const [hf, hb] = hVal.split("|");
-    const mPairs = (mf.match(/.{1,2}/g) || []).concat(mb.match(/.{1,2}/g) || []);
-    const hPairs = (hf.match(/.{1,2}/g) || []).concat(hb.match(/.{1,2}/g) || []);
+  let best = 0;
+  let worst = 0;
+
+  for (const trait of traits) {
+    const mareVal = (mare[trait] || "").replace(/\s+/g, "");
+    const stallionVal = (stallion[trait] || "").replace(/\s+/g, "");
+    if (!mareVal.includes("|") || !stallionVal.includes("|")) continue;
+
+    const [mFront, mBack] = mareVal.split("|");
+    const [sFront, sBack] = stallionVal.split("|");
+
+    const marePairs = (mFront.match(/.{1,2}/g) || []).concat(mBack.match(/.{1,2}/g) || []);
+    const stallionPairs = (sFront.match(/.{1,2}/g) || []).concat(sBack.match(/.{1,2}/g) || []);
+
     for (let i = 0; i < 8; i++) {
-      const { best: b, worst: w } = pairScore(i < 4, mPairs[i], hPairs[i]);
+      const isFront = i < 4;
+      const { best: b, worst: w } = pairScore(isFront, marePairs[i], stallionPairs[i]);
       best += b;
       worst += w;
     }
   }
+
   return { best, worst };
 }
+
 
 // ========================================
 // Darstellung
