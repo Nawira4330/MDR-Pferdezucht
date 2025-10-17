@@ -1,191 +1,219 @@
-// === Tabs Umschalten ===
-document.addEventListener("DOMContentLoaded", () => {
+// ===============================
+// Paarungsanalyse – MDR-Zucht 2025
+// ===============================
+
+// Google Sheets CSV URLs
+const STUTEN_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZE4HXc1di-ym2n79-_9Rc-vxHbMMniRXmgq1woBSha0MjvANgvYFoqH4w7E2LA/pub?output=csv";
+const HENGSTE_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvyxHFLsRMdLYcZR6VhzhDDHJX46TLp3WMUslb53ij2zzAY7R2o9rZjVHpani0cA/pub?output=csv";
+
+// Globale Variablen
+let mares = [];
+let stallions = [];
+
+// =============== CSV LADEN ===============
+async function loadCSV(url) {
+  const response = await fetch(url);
+  const text = await response.text();
+  const rows = text.split("\n").map((r) => r.split(","));
+  const headers = rows[0].map((h) => h.trim());
+  return rows
+    .slice(1)
+    .filter((r) => r.length > 1)
+    .map((r) => {
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = (r[i] || "").trim();
+      });
+      return obj;
+    });
+}
+
+// =============== INIT ===============
+async function init() {
+  [mares, stallions] = await Promise.all([loadCSV(STUTEN_URL), loadCSV(HENGSTE_URL)]);
+  populateDropdowns();
+  document.getElementById("mareSelect").addEventListener("change", showSelectedMare);
+  document.getElementById("ownerSelect").addEventListener("change", showByOwner);
+  document.getElementById("showAll").addEventListener("click", showAllResults);
+  setupTabs();
+  setupInfoToggle();
+}
+
+// =============== DROPDOWNS ===============
+function populateDropdowns() {
+  const mareSelect = document.getElementById("mareSelect");
+  const ownerSelect = document.getElementById("ownerSelect");
+
+  mareSelect.innerHTML = '<option value="">– Stute wählen –</option>';
+  ownerSelect.innerHTML = '<option value="">– Besitzer wählen –</option>';
+
+  const owners = new Set();
+
+  mares.forEach((mare) => {
+    const name = mare["Name"]?.trim();
+    const owner = mare["Besitzer"]?.trim();
+    if (name) {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      mareSelect.appendChild(opt);
+    }
+    if (owner) owners.add(owner);
+  });
+
+  [...owners].forEach((owner) => {
+    const opt = document.createElement("option");
+    opt.value = owner;
+    opt.textContent = owner;
+    ownerSelect.appendChild(opt);
+  });
+}
+
+// =============== ANZEIGE ===============
+function showSelectedMare() {
+  const mareName = document.getElementById("mareSelect").value;
+  if (!mareName) return;
+  const mare = mares.find((m) => m["Name"] === mareName);
+  if (mare) displayResults([mare]);
+}
+
+function showByOwner() {
+  const ownerName = document.getElementById("ownerSelect").value;
+  if (!ownerName) return;
+  const owned = mares.filter((m) => m["Besitzer"] === ownerName);
+  displayResults(owned);
+}
+
+function showAllResults() {
+  displayResults(mares);
+}
+
+// =============== SCORE-BERECHNUNG ===============
+function calculateScore(mare, stallion) {
+  const traits = [
+    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust","Rückenlinie",
+    "Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
+  ];
+
+  let total = 0;
+
+  for (const trait of traits) {
+    const mareVal = (mare[trait] || "").replace(/\s+/g, "");
+    const stallionVal = (stallion[trait] || "").replace(/\s+/g, "");
+    if (!mareVal.includes("|") || !stallionVal.includes("|")) continue;
+
+    const [mareFront, mareBack] = mareVal.split("|");
+    const [stallionFront, stallionBack] = stallionVal.split("|");
+
+    const marePairs = mareFront.match(/.{1,2}/g).concat(mareBack.match(/.{1,2}/g));
+    const stallionPairs = stallionFront.match(/.{1,2}/g).concat(stallionBack.match(/.{1,2}/g));
+
+    let traitScore = 0;
+    for (let i = 0; i < 8; i++) {
+      const m = marePairs[i];
+      const s = stallionPairs[i];
+      traitScore += scorePair(i < 4, m, s);
+    }
+
+    total += traitScore;
+  }
+
+  return total;
+}
+
+// Bewertung einzelner Genpaare
+function scorePair(isFront, m, s) {
+  if (!m || !s) return 0;
+  const combo = m + "-" + s;
+
+  const scoreTable = {
+    // vorne (HH-Ziel)
+    "HH-HH": 4, "HH-Hh": 3, "HH-hh": 2,
+    "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
+    "hh-HH": 2, "hh-Hh": 1, "hh-hh": 0,
+  };
+
+  const backTable = {
+    // hinten (hh-Ziel)
+    "HH-HH": 0, "HH-Hh": 1, "HH-hh": 2,
+    "Hh-HH": 1, "Hh-Hh": 2, "Hh-hh": 3,
+    "hh-HH": 2, "hh-Hh": 3, "hh-hh": 4,
+  };
+
+  return isFront ? (scoreTable[combo] ?? 0) : (backTable[combo] ?? 0);
+}
+
+// =============== TOP 3 BERECHNUNG ===============
+function displayResults(list) {
+  const container = document.getElementById("results");
+  container.innerHTML = "";
+
+  list.forEach((mare) => {
+    const mareCard = document.createElement("div");
+    mareCard.classList.add("card");
+
+    const title = document.createElement("h3");
+    title.innerHTML = `${mare["Name"]} <span class="badge">${mare["Farbgenetik"] || "-"}</span>`;
+    mareCard.appendChild(title);
+
+    const owner = document.createElement("p");
+    owner.innerHTML = `<strong>Besitzer:</strong> ${mare["Besitzer"] || "-"}`;
+    mareCard.appendChild(owner);
+
+    // individuelle Scores für alle Hengste
+    const scored = stallions.map((stallion) => ({
+      name: stallion["Name"],
+      color: stallion["Farbgenetik"],
+      score: calculateScore(mare, stallion),
+    }));
+
+    // Top 3 sortiert
+    const top3 = scored.sort((a, b) => b.score - a.score).slice(0, 3);
+
+    const ul = document.createElement("ul");
+    ul.classList.add("toplist");
+
+    const medals = ["🥇", "🥈", "🥉"];
+
+    top3.forEach((h, i) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span><span class="medal">${medals[i]}</span>${h.name}</span>
+        <span><span class="badge">${h.color || "-"}</span> 
+        <span class="score">Fohlen: Best ${h.score} / Worst ${h.score}</span></span>`;
+      ul.appendChild(li);
+    });
+
+    mareCard.appendChild(ul);
+    container.appendChild(mareCard);
+  });
+}
+
+// =============== INFOBOX LOGIK ===============
+function setupTabs() {
   const tabs = document.querySelectorAll(".tab");
-  const contents = document.querySelectorAll(".tab-content");
-  tabs.forEach(tab => {
+  tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      contents.forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab).classList.add("active");
     });
   });
-});
-
-// === Datenquellen ===
-const STUTEN_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZE4HXc1di-ym2n79-_9Rc-vxHbMMniRXmgq1woBSha0MjvANgvYFoqH4w7E2LA/pub?output=csv";
-const HENGSTE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvyxHFLsRMdLYcZR6VhzhDDHJX46TLp3WMUslb53ij2zzAY7R2o9rZjVHpani0cA/pub?output=csv";
-
-let stuten = [];
-let hengste = [];
-
-const MERKMALE = [
-  "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust",
-  "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
-];
-
-// === CSV robust laden + Schlüssel bereinigen ===
-async function ladeCSV(url) {
-  const res = await fetch(url);
-  const text = await res.text();
-  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/\uFEFF/g, "").replace(/\s+/g, ""));
-  const rows = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    let inQuotes = false, field = "", fields = [];
-    for (let c of line) {
-      if (c === '"') inQuotes = !inQuotes;
-      else if (c === "," && !inQuotes) {
-        fields.push(field.trim());
-        field = "";
-      } else field += c;
-    }
-    fields.push(field.trim());
-
-    const obj = {};
-    headers.forEach((h, j) => {
-      obj[h] = (fields[j] || "").trim();
-    });
-    rows.push(obj);
-  }
-  return rows;
 }
 
-// === Genetik Parser ===
-// -> Ignoriert Leerzeichen, Trenner & "|" und zerlegt erst im Code in 8 Paare
-function parseGeneString(str) {
-  if (!str) return [];
-  const clean = str.replace(/\s+/g, "").replace(/\|/g, "").trim();
-  if (clean.length < 16) return []; // 8 Paare à 2 Zeichen = 16
-  return clean.match(/.{2}/g).slice(0, 8); // nur erste 8 Paare
-}
-
-// === Bewertungs-Tabellen ===
-const FRONT_SCORE = {
-  "HH-HH":4,"HH-Hh":3,"HH-hh":2,
-  "Hh-HH":3,"Hh-Hh":2,"Hh-hh":1,
-  "hh-HH":2,"hh-Hh":1,"hh-hh":0
-};
-const BACK_SCORE = {
-  "HH-HH":0,"HH-Hh":1,"HH-hh":2,
-  "Hh-HH":1,"Hh-Hh":2,"Hh-hh":3,
-  "hh-HH":2,"hh-Hh":3,"hh-hh":4
-};
-
-// === Allelenkombis (je 1 H/h von beiden Elternteilen) ===
-function getFoalCombos(mare, stallion) {
-  const allelesMare = mare.split("");
-  const allelesStallion = stallion.split("");
-  let results = [];
-  allelesMare.forEach(a => allelesStallion.forEach(b => results.push(a + b)));
-  return results;
-}
-
-// === Scoreberechnung ===
-function berechneScore(stute, hengst) {
-  let best = 0, worst = 0;
-
-  for (const merk of MERKMALE) {
-    // Robust gegen Leerzeichen in Spaltennamen
-    const sVal = stute[merk] || stute[merk.replace(/\s+/g, "")] || "";
-    const hVal = hengst[merk] || hengst[merk.replace(/\s+/g, "")] || "";
-
-    const sGenes = parseGeneString(sVal);
-    const hGenes = parseGeneString(hVal);
-
-    if (sGenes.length !== 8 || hGenes.length !== 8) continue;
-
-    for (let i = 0; i < 8; i++) {
-      const isFront = i < 4; // erste 4 = HH-Ziel, letzte 4 = hh-Ziel
-      const table = isFront ? FRONT_SCORE : BACK_SCORE;
-      const combos = getFoalCombos(sGenes[i], hGenes[i]);
-      const scores = combos.map(c => table[c] ?? 0);
-      best += Math.max(...scores);
-      worst += Math.min(...scores);
-    }
-  }
-  return { best, worst };
-}
-
-// === Dropdowns füllen ===
-function fuelleDropdowns() {
-  const mareSel = document.getElementById("mareSelect");
-  const ownerSel = document.getElementById("ownerSelect");
-  mareSel.innerHTML = '<option value="">-- bitte wählen --</option>';
-  ownerSel.innerHTML = '<option value="">-- bitte wählen --</option>';
-
-  stuten.forEach((s, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = s.Name || `(Stute ${i + 1})`;
-    mareSel.appendChild(opt);
-  });
-
-  [...new Set(stuten.map(s => s.Besitzer))].filter(x => x).forEach(o => {
-    const opt = document.createElement("option");
-    opt.value = o;
-    opt.textContent = o;
-    ownerSel.appendChild(opt);
+function setupInfoToggle() {
+  const toggle = document.getElementById("toggleInfo");
+  const box = document.getElementById("infoContainer");
+  toggle.addEventListener("click", () => {
+    box.classList.toggle("hidden");
+    toggle.textContent = box.classList.contains("hidden")
+      ? "ℹ️ Info & Score-Erklärung anzeigen"
+      : "🔽 Info & Score-Erklärung ausblenden";
   });
 }
 
-// === Ergebnisse anzeigen ===
-function zeigeVorschlaege() {
-  const mareSel = document.getElementById("mareSelect");
-  const ownerSel = document.getElementById("ownerSelect");
-  const results = document.getElementById("results");
-  results.innerHTML = "";
-
-  let mares = [];
-  if (mareSel.value) mares = [stuten[parseInt(mareSel.value)]];
-  else if (ownerSel.value) mares = stuten.filter(s => s.Besitzer === ownerSel.value);
-  else mares = stuten;
-
-  mares.forEach(stute => {
-    const scored = hengste.map(h => {
-      const { best, worst } = berechneScore(stute, h);
-      return { ...h, best, worst };
-    })
-    .filter(h => h.best > 0)
-    .sort((a, b) => b.best - a.best)
-    .slice(0, 3);
-
-    const html = `
-      <div class="card">
-        <h3>${stute.Name} <span class="badge">${stute.Farbgenetik}</span></h3>
-        <p><strong>Besitzer:</strong> ${stute.Besitzer}</p>
-        <ul class="toplist">
-          ${scored.map((h, i) => `
-            <li>
-              <span class="medal">${["🥇","🥈","🥉"][i]}</span>
-              ${h.Name}
-              <span class="badge">${h.Farbgenetik}</span>
-              <span class="score">Fohlen: Best ${h.best} / Worst ${h.worst}</span>
-            </li>
-          `).join("")}
-        </ul>
-      </div>`;
-    results.insertAdjacentHTML("beforeend", html);
-  });
-}
-
-// === Events ===
-document.getElementById("mareSelect").addEventListener("change", zeigeVorschlaege);
-document.getElementById("ownerSelect").addEventListener("change", zeigeVorschlaege);
-document.getElementById("showAll").addEventListener("click", zeigeVorschlaege);
-
-// === Init ===
-window.addEventListener("DOMContentLoaded", async () => {
-  stuten = await ladeCSV(STUTEN_URL);
-  hengste = await ladeCSV(HENGSTE_URL);
-
-  // Debug-Ausgabe zur Kontrolle
-  console.log("✅ Erste Stute:", stuten[0]);
-  console.log("✅ Erste Hengst:", hengste[0]);
-  console.log("✅ Kopf-Gene Stute:", parseGeneString(stuten[0]?.Kopf));
-  console.log("✅ Kopf-Gene Hengst:", parseGeneString(hengste[0]?.Kopf));
-
-  fuelleDropdowns();
-});
+// =============== START ===============
+init();
