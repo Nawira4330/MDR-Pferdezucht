@@ -1,4 +1,19 @@
-// app.js – Exterieur-Fohlenanalyse nach genetischem Ideal (HH vorne, hh hinten)
+// Tab-Umschaltung
+document.addEventListener("DOMContentLoaded", () => {
+  const tabs = document.querySelectorAll(".tab");
+  const contents = document.querySelectorAll(".tab-content");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      contents.forEach(c => c.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
+  });
+});
+
+
+// ==== Exterieur-Matching Code ====
 const STUTEN_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZE4HXc1di-ym2n79-_9Rc-vxHbMMniRXmgq1woBSha0MjvANgvYFoqH4w7E2LA/pub?output=csv";
 const HENGSTE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvyxHFLsRMdLYcZR6VhzhDDHJX46TLp3WMUslb53ij2zzAY7R2o9rZjVHpani0cA/pub?output=csv";
 
@@ -10,7 +25,7 @@ const MERKMALE = [
   "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
 ];
 
-// CSV laden (robust, auch bei Anführungszeichen)
+// CSV robust laden
 async function ladeCSV(url) {
   const res = await fetch(url);
   const text = await res.text();
@@ -35,7 +50,6 @@ async function ladeCSV(url) {
   return rows;
 }
 
-// Genetik-Paare erkennen
 function parseGeneString(str) {
   if (!str) return [];
   const clean = str.replace(/\s+/g, "").replace("|", "");
@@ -80,7 +94,6 @@ function berechneScore(stute, hengst) {
   return { best, worst };
 }
 
-// Dropdowns
 function fuelleDropdowns() {
   const mareSel = document.getElementById("mareSelect");
   const ownerSel = document.getElementById("ownerSelect");
@@ -102,7 +115,6 @@ function fuelleDropdowns() {
   });
 }
 
-// Anzeige
 function zeigeVorschlaege() {
   const mareSel = document.getElementById("mareSelect");
   const ownerSel = document.getElementById("ownerSelect");
@@ -140,7 +152,6 @@ function zeigeVorschlaege() {
   });
 }
 
-// Events
 document.getElementById("mareSelect").addEventListener("change", zeigeVorschlaege);
 document.getElementById("ownerSelect").addEventListener("change", zeigeVorschlaege);
 document.getElementById("showAll").addEventListener("click", zeigeVorschlaege);
