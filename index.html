@@ -30,52 +30,61 @@
     <!-- Ergebnisse -->
     <section id="results" class="results"></section>
 
-    <!-- Infobox mit Tabs -->
+    <!-- Infobox (einklappbar) -->
     <section class="info-box">
-      <div class="tab-header">
-        <button class="tab active" data-tab="info">Info zur Berechnung der Hengste</button>
-        <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
-      </div>
-
-      <div id="info" class="tab-content active">
-        <h2>Info zur Berechnung der Hengste</h2>
-        <p>
-          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
-          Ziel ist es, dass das Fohlen dem Idealwert 
-          <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
-        </p>
-        <ul>
-          <li>Stärken der Stute (vorne HH) werden unterstützt</li>
-          <li>Schwächen (hinten hh) werden ausgeglichen</li>
-          <li>Bewertung pro Gen-Paar nach genetischer Tabelle</li>
-        </ul>
-
-        <div class="warning">
-          ⚠️ <strong>Achtung:</strong> Inzucht und doppelte Vererbung des Overo-Gens werden in dieser Berechnung
-          <strong>nicht berücksichtigt</strong>.
+      <button id="toggleInfo" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
+      <div id="infoContainer" class="info-content hidden">
+        <div class="tab-header">
+          <button class="tab active" data-tab="info">Info zur Berechnung der Hengste</button>
+          <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
         </div>
-      </div>
 
-      <div id="score" class="tab-content">
-        <h2>Score-Berechnung & Interpretation</h2>
-        <p>
-          Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, Widerrist, Schulter,
-          Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, Fesseln, Hufe)
-          werden acht Gen-Paare verglichen – vier vorne (HH-Ziel) und vier hinten (hh-Ziel).
-        </p>
-        <p>
-          Jedes Paar kann <strong>0–4 Punkte</strong> erreichen. Ein Merkmal erreicht maximal 32 Punkte
-          (8 Paare × 4). Insgesamt also <strong>max. 448 Punkte</strong> über alle Merkmale.
-        </p>
+        <div id="info" class="tab-content active">
+          <h2>Info zur Berechnung der Hengste</h2>
+          <p>
+            Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
+            Ziel ist es, dass das Fohlen dem Idealwert 
+            <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
+          </p>
+          <ul>
+            <li>Stärken der Stute (vorne HH) werden unterstützt</li>
+            <li>Schwächen (hinten hh) werden ausgeglichen</li>
+            <li>Bewertung pro Gen-Paar nach genetischer Tabelle</li>
+          </ul>
 
-        <table class="score-table">
-          <tr><th>Gesamtscore</th><th>Bedeutung</th></tr>
-          <tr><td>400 – 448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-          <tr><td>300 – 399</td><td>Sehr gute Kombination, empfohlen</td></tr>
-          <tr><td>200 – 299</td><td>Solide Kombination mit Potenzial</td></tr>
-          <tr><td>100 – 199</td><td>Genetisch eher ungünstig</td></tr>
-          <tr><td>0 – 99</td><td>Nicht empfohlen</td></tr>
-        </table>
+          <div class="warning">
+            ⚠️ <strong>Achtung:</strong> Inzucht und doppelte Vererbung des Overo-Gens werden
+            <strong>nicht berücksichtigt</strong>.
+          </div>
+        </div>
+
+        <div id="score" class="tab-content">
+          <h2>Score-Berechnung & Interpretation</h2>
+          <p>
+            Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, 
+            Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, 
+            Fesseln, Hufe) werden acht Gen-Paare verglichen – vier vorne (HH-Ziel) und vier hinten (hh-Ziel).
+          </p>
+          <p>
+            Jedes Paar kann <strong>0–4 Punkte</strong> erreichen. 
+            Ein Merkmal erreicht maximal 32 Punkte (8 Paare × 4). 
+            Insgesamt also <strong>max. 448 Punkte</strong> über alle Merkmale.
+          </p>
+
+          <table class="score-table">
+            <tr><th>Gesamtscore</th><th>Bedeutung</th></tr>
+            <tr><td>400 – 448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
+            <tr><td>300 – 399</td><td>Sehr gute Kombination, empfohlen</td></tr>
+            <tr><td>200 – 299</td><td>Solide Kombination mit Potenzial</td></tr>
+            <tr><td>100 – 199</td><td>Genetisch eher ungünstig</td></tr>
+            <tr><td>0 – 99</td><td>Nicht empfohlen</td></tr>
+          </table>
+
+          <p>
+            Ein ℹ️-Icon neben einem Hengst zeigt künftig detailliert, 
+            wie sich der Score aus den einzelnen Merkmalen zusammensetzt.
+          </p>
+        </div>
       </div>
     </section>
   </main>
