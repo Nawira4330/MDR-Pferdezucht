@@ -1,107 +1,87 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
   </header>
 
-  <section class="warning">
-    ⚠️ <strong>Wichtiger Hinweis:</strong>  
-    Diese Analyse berücksichtigt keine Inzuchtverhältnisse oder die Vererbung des Overo-Gens.
-  </section>
-  
-  <section id="controls">
-    <select id="mareSelect">
-      <option value="">-- Stute auswählen --</option>
-    </select>
-    <select id="ownerSelect">
-      <option value="">-- Besitzer auswählen --</option>
-    </select>
-    <button id="showAll">Alle anzeigen</button>
-  </section>
+  <main>
+    <!-- Auswahlbereich -->
+    <section class="selection">
+      <div class="dropdowns">
+        <div class="select-group">
+          <label for="mareSelect">Stute auswählen:</label>
+          <select id="mareSelect"></select>
+        </div>
+        <div class="select-group">
+          <label for="ownerSelect">Besitzer auswählen:</label>
+          <select id="ownerSelect"></select>
+        </div>
+        <button id="showAll" class="btn">Alle anzeigen</button>
+      </div>
+    </section>
 
-  <main id="results"></main>
-  
-  <!-- Neue Infobox mit Tabs -->
-  <section class="infobox">
-    <div class="tabs">
-      <button class="tab active" data-tab="info">Info zur Berechnung</button>
-      <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
-    </div>
+    <!-- Ergebnisse -->
+    <section id="results" class="results"></section>
 
-    <div class="tab-content active" id="info">
-      <h2>Info zur Berechnung der Hengste</h2>
-      <p>
-        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale bewertet.  
-        Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> erreicht.
-      </p>
-      <ul>
-        <li>Vordere 4 Gen-Paare: sollen HH ergeben</li>
-        <li>Hintere 4 Gen-Paare: sollen hh ergeben</li>
-        <li>Die Werte werden über 14 Merkmale hinweg analysiert</li>
-      </ul>
-      <p>
-        Für jedes Merkmal werden die 8 Gen-Paare von Stute und Hengst kombiniert,  
-        um den genetischen Idealwert des Fohlens zu berechnen.  
-        Dabei wird jedes mögliche Allelenpaar (H oder h) simuliert.
-      </p>
-    </div>
+    <!-- Infobox mit Tabs -->
+    <section class="info-box">
+      <div class="tab-header">
+        <button class="tab active" data-tab="info">Info zur Berechnung der Hengste</button>
+        <button class="tab" data-tab="score">Score-Berechnung & Interpretation</button>
+      </div>
 
-    <div class="tab-content" id="score">
-      <h2>Score-Berechnung und Interpretation</h2>
-      <p>
-        Jedes Merkmal hat 8 Gen-Paare.  
-        Für jede Kombination von Stute und Hengst werden alle möglichen Fohlen-Gene berechnet  
-        und nach folgender Tabelle bewertet:
-      </p>
+      <div id="info" class="tab-content active">
+        <h2>Info zur Berechnung der Hengste</h2>
+        <p>
+          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
+          Ziel ist es, dass das Fohlen dem Idealwert 
+          <strong>HH HH HH HH | hh hh hh hh</strong> möglichst nahekommt.
+        </p>
+        <ul>
+          <li>Stärken der Stute (vorne HH) werden unterstützt</li>
+          <li>Schwächen (hinten hh) werden ausgeglichen</li>
+          <li>Bewertung pro Gen-Paar nach genetischer Tabelle</li>
+        </ul>
 
-      <h3>Vordere Paare (Ziel: HH)</h3>
-      <table>
-        <tr><td>HH–HH</td><td>4</td></tr>
-        <tr><td>HH–Hh</td><td>3</td></tr>
-        <tr><td>HH–hh</td><td>2</td></tr>
-        <tr><td>Hh–HH</td><td>3</td></tr>
-        <tr><td>Hh–Hh</td><td>2</td></tr>
-        <tr><td>Hh–hh</td><td>1</td></tr>
-        <tr><td>hh–HH</td><td>2</td></tr>
-        <tr><td>hh–Hh</td><td>1</td></tr>
-        <tr><td>hh–hh</td><td>0</td></tr>
-      </table>
+        <div class="warning">
+          ⚠️ <strong>Achtung:</strong> Inzucht und doppelte Vererbung des Overo-Gens werden in dieser Berechnung
+          <strong>nicht berücksichtigt</strong>.
+        </div>
+      </div>
 
-      <h3>Hintere Paare (Ziel: hh)</h3>
-      <table>
-        <tr><td>HH–HH</td><td>0</td></tr>
-        <tr><td>HH–Hh</td><td>1</td></tr>
-        <tr><td>HH–hh</td><td>2</td></tr>
-        <tr><td>Hh–HH</td><td>1</td></tr>
-        <tr><td>Hh–Hh</td><td>2</td></tr>
-        <tr><td>Hh–hh</td><td>3</td></tr>
-        <tr><td>hh–HH</td><td>2</td></tr>
-        <tr><td>hh–Hh</td><td>3</td></tr>
-        <tr><td>hh–hh</td><td>4</td></tr>
-      </table>
+      <div id="score" class="tab-content">
+        <h2>Score-Berechnung & Interpretation</h2>
+        <p>
+          Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, Widerrist, Schulter,
+          Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, Fesseln, Hufe)
+          werden acht Gen-Paare verglichen – vier vorne (HH-Ziel) und vier hinten (hh-Ziel).
+        </p>
+        <p>
+          Jedes Paar kann <strong>0–4 Punkte</strong> erreichen. Ein Merkmal erreicht maximal 32 Punkte
+          (8 Paare × 4). Insgesamt also <strong>max. 448 Punkte</strong> über alle Merkmale.
+        </p>
 
-      <h3>Interpretation</h3>
-      <table>
-        <tr><th>Scorebereich</th><th>Bedeutung</th></tr>
-        <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-        <tr><td>300–400</td><td>Sehr gute Kombination</td></tr>
-        <tr><td>200–300</td><td>Solide Kombination</td></tr>
-        <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
-        <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
-      </table>
-    </div>
-  </section>
+        <table class="score-table">
+          <tr><th>Gesamtscore</th><th>Bedeutung</th></tr>
+          <tr><td>400 – 448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
+          <tr><td>300 – 399</td><td>Sehr gute Kombination, empfohlen</td></tr>
+          <tr><td>200 – 299</td><td>Solide Kombination mit Potenzial</td></tr>
+          <tr><td>100 – 199</td><td>Genetisch eher ungünstig</td></tr>
+          <tr><td>0 – 99</td><td>Nicht empfohlen</td></tr>
+        </table>
+      </div>
+    </section>
+  </main>
 
   <footer>
-    © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
+    <p>@ 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung</p>
   </footer>
 
   <script src="app.js"></script>
