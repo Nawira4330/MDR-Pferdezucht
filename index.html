@@ -73,20 +73,31 @@
       </div>
     </section>
 
-    <!-- Auswahlbereich -->
-    <section class="selection">
-      <div class="dropdowns">
-        <div class="select-group">
-          <label for="mareSelect">Stute auswählen:</label>
-          <select id="mareSelect"></select>
-        </div>
-        <div class="select-group">
-          <label for="ownerSelect">Besitzer auswählen:</label>
-          <select id="ownerSelect"></select>
-        </div>
-        <button id="showAll" class="btn">Alle anzeigen</button>
-      </div>
-    </section>
+<!-- Auswahlbereich -->
+<section class="selection">
+  <div class="dropdowns">
+    <div class="select-group">
+      <label for="mareSelect">Stute auswählen:</label>
+      <select id="mareSelect"></select>
+    </div>
+    <div class="select-group">
+      <label for="ownerSelect">Besitzer auswählen:</label>
+      <select id="ownerSelect"></select>
+    </div>
+
+    <!-- Sortierungsauswahl -->
+    <div class="select-group">
+      <label for="sortSelect">Sortierung:</label>
+      <select id="sortSelect">
+        <option value="best">Bester Score (Best)</option>
+        <option value="worst">Bester Score (Worst)</option>
+        <option value="range">Kleinste Range (Differenz)</option>
+      </select>
+    </div>
+
+    <button id="showAll" class="btn">Alle anzeigen</button>
+  </div>
+</section>
 
     <!-- Ergebnisse -->
     <section id="results" class="results"></section>
