@@ -91,13 +91,14 @@ function showAllResults() {
 }
 
 // =============== SCORE-BERECHNUNG ===============
-function calculateScore(mare, stallion) {
+function calculateBestWorstScore(mare, stallion) {
   const traits = [
-    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust","Rückenlinie",
-    "Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
+    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter", "Brust", "Rückenlinie",
+    "Rückenlänge", "Kruppe", "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
   ];
 
-  let total = 0;
+  let bestTotal = 0;
+  let worstTotal = 0;
 
   for (const trait of traits) {
     const mareVal = (mare[trait] || "").replace(/\s+/g, "");
@@ -107,45 +108,59 @@ function calculateScore(mare, stallion) {
     const [mareFront, mareBack] = mareVal.split("|");
     const [stallionFront, stallionBack] = stallionVal.split("|");
 
-    const marePairs = mareFront.match(/.{1,2}/g).concat(mareBack.match(/.{1,2}/g));
-    const stallionPairs = stallionFront.match(/.{1,2}/g).concat(stallionBack.match(/.{1,2}/g));
+    const marePairs = (mareFront.match(/.{1,2}/g) || []).concat(mareBack.match(/.{1,2}/g) || []);
+    const stallionPairs = (stallionFront.match(/.{1,2}/g) || []).concat(stallionBack.match(/.{1,2}/g) || []);
 
-    let traitScore = 0;
+    let traitBest = 0;
+    let traitWorst = 0;
+
     for (let i = 0; i < 8; i++) {
       const m = marePairs[i];
       const s = stallionPairs[i];
-      traitScore += scorePair(i < 4, m, s);
+      const { best, worst } = scorePairBestWorst(i < 4, m, s);
+      traitBest += best;
+      traitWorst += worst;
     }
 
-    total += traitScore;
+    bestTotal += traitBest;
+    worstTotal += traitWorst;
   }
 
-  return total;
+  return { bestTotal, worstTotal };
 }
 
-// Bewertung einzelner Genpaare
-function scorePair(isFront, m, s) {
-  if (!m || !s) return 0;
-  const combo = m + "-" + s;
+// Bewertung einzelner Genpaare (beste + schlechteste mögliche Kombination)
+function scorePairBestWorst(isFront, m, s) {
+  if (!m || !s) return { best: 0, worst: 0 };
 
-  const scoreTable = {
-    // vorne (HH-Ziel)
-    "HH-HH": 4, "HH-Hh": 3, "HH-hh": 2,
-    "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
-    "hh-HH": 2, "hh-Hh": 1, "hh-hh": 0,
+  // Alle möglichen Weitergaben (z. B. Hh → H oder h)
+  const mareGenes = m.split("");
+  const stallionGenes = s.split("");
+
+  const combinations = [];
+  for (const ma of mareGenes) {
+    for (const st of stallionGenes) {
+      combinations.push(ma + st);
+    }
+  }
+
+  const tableFront = {
+    "HH": 4, "Hh": 3, "hH": 3, "hh": 2 // vorne HH-Ziel
+  };
+  const tableBack = {
+    "HH": 0, "Hh": 1, "hH": 1, "hh": 4 // hinten hh-Ziel
   };
 
-  const backTable = {
-    // hinten (hh-Ziel)
-    "HH-HH": 0, "HH-Hh": 1, "HH-hh": 2,
-    "Hh-HH": 1, "Hh-Hh": 2, "Hh-hh": 3,
-    "hh-HH": 2, "hh-Hh": 3, "hh-hh": 4,
-  };
+  const table = isFront ? tableFront : tableBack;
+  const scores = combinations.map((g) => table[g] ?? 0);
 
-  return isFront ? (scoreTable[combo] ?? 0) : (backTable[combo] ?? 0);
+  return {
+    best: Math.max(...scores),
+    worst: Math.min(...scores)
+  };
 }
 
-// =============== TOP 3 BERECHNUNG ===============
+// =============== TOP 3 ANZEIGE ===============
 function displayResults(list) {
   const container = document.getElementById("results");
   container.innerHTML = "";
@@ -163,14 +178,18 @@ function displayResults(list) {
     mareCard.appendChild(owner);
 
     // individuelle Scores für alle Hengste
-    const scored = stallions.map((stallion) => ({
-      name: stallion["Name"],
-      color: stallion["Farbgenetik"],
-      score: calculateScore(mare, stallion),
-    }));
+    const scored = stallions.map((stallion) => {
+      const { bestTotal, worstTotal } = calculateBestWorstScore(mare, stallion);
+      return {
+        name: stallion["Name"],
+        color: stallion["Farbgenetik"],
+        best: bestTotal,
+        worst: worstTotal
+      };
+    });
 
-    // Top 3 sortiert
-    const top3 = scored.sort((a, b) => b.score - a.score).slice(0, 3);
+    // Top 3 nach bestem Score
+    const top3 = scored.sort((a, b) => b.best - a.best).slice(0, 3);
 
     const ul = document.createElement("ul");
     ul.classList.add("toplist");
@@ -181,8 +200,10 @@ function displayResults(list) {
       const li = document.createElement("li");
       li.innerHTML = `
         <span><span class="medal">${medals[i]}</span>${h.name}</span>
-        <span><span class="badge">${h.color || "-"}</span> 
-        <span class="score">Fohlen: Best ${h.score} / Worst ${h.score}</span></span>`;
+        <span>
+          <span class="badge">${h.color || "-"}</span> 
+          <span class="score">Fohlen: Best ${h.best} / Worst ${h.worst}</span>
+        </span>`;
       ul.appendChild(li);
     });
 
