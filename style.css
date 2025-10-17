@@ -16,16 +16,26 @@ header {
 
 /* === Warnung unter der Überschrift === */
 .warning-section {
-  background: #fff5f5;
-  border: 2px solid #ff6b6b;
-  color: #a80000;
+  background: linear-gradient(to right, #dff6d5, #c2e8ff);
+  border: 2px solid #6b9d00;
+  color: #234;
   font-weight: 600;
   text-align: center;
-  padding: 10px 20px;
-  margin: 10px auto 20px auto;
-  border-radius: 8px;
+  padding: 12px 20px;
+  margin: 15px auto 25px auto;
+  border-radius: 10px;
   max-width: 900px;
-  box-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(107, 157, 0, 0.2);
+  font-size: 1rem;
+}
+
+.warning-section strong {
+  color: #4d7300;
+}
+
+.warning-section::before {
+  content: "⚠️ ";
+  font-size: 1.2em;
 }
 
 /* Hauptinhalt */
