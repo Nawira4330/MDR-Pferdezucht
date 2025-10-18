@@ -1,49 +1,85 @@
-// Berechnet genetischen Score (Best/Worst)
+// genetics.js – Berechnet Best/Worst Score für jede Stute-Hengst-Kombination
+
 const Genetics = {
   normalize(pair) {
     if (!pair) return "hh";
     const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
-    const hCount = (clean.match(/H/g) || []).length;
-    return hCount >= 2 ? "HH" : hCount === 1 ? "Hh" : "hh";
+    const count = (clean.match(/H/g) || []).length;
+    return count === 2 ? "HH" : count === 1 ? "Hh" : "hh";
   },
 
-  pairGenes(str) {
-    if (!str) return [];
-    return str.replace(/\s+/g, "").split("|").join("").match(/.{1,2}/g) || [];
-  },
-
-  geneValue(g, front) {
-    if (front) return g === "HH" ? 2 : g === "Hh" ? 1 : 0;
-    else return g === "hh" ? 2 : g === "Hh" ? 1 : 0;
+  value(gene, front) {
+    // Punktevergabe gemäß deiner Vorgabe
+    if (front) {
+      if (gene === "HH") return 2;
+      if (gene === "Hh") return 1;
+      return 0;
+    } else {
+      if (gene === "HH") return 0;
+      if (gene === "Hh") return 1;
+      return 2;
+    }
   },
 
   calculate(mare, stallion) {
-    const traits = ["Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust","Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"];
-    let best = 0, worst = 0, count = 0;
+    const TRAITS = [
+      "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
+      "Brust","Rückenlinie","Rückenlänge","Kruppe",
+      "Beinwinkelung","Beinstellung","Fesseln","Hufe"
+    ];
 
-    traits.forEach(tr => {
-      const m = (mare[tr] || "").replace(/\s+/g, "");
-      const h = (stallion[tr] || "").replace(/\s+/g, "");
-      if (!m || !h) return;
+    let totalBest = 0;
+    let totalWorst = 0;
+    let validTraits = 0;
 
-      const mPairs = this.pairGenes(m).map(this.normalize);
-      const hPairs = this.pairGenes(h).map(this.normalize);
-      if (mPairs.length < 8 || hPairs.length < 8) return;
+    for (const trait of TRAITS) {
+      const mRaw = mare[trait] || "";
+      const sRaw = stallion[trait] || "";
+      if (!mRaw || !sRaw) continue;
+
+      // Leerzeichen entfernen und 8 Paare bilden
+      const mGenes = mRaw.replace(/\s+/g, "").split("|").join("");
+      const sGenes = sRaw.replace(/\s+/g, "").split("|").join("");
+      const mPairs = (mGenes.match(/.{1,2}/g) || []).slice(0, 8);
+      const sPairs = (sGenes.match(/.{1,2}/g) || []).slice(0, 8);
+
+      if (mPairs.length < 8 || sPairs.length < 8) continue;
+      validTraits++;
+
+      // Bestes & schlechtestes Fohlen simulieren (Mendel)
+      let bestScore = 0;
+      let worstScore = 0;
 
       for (let i = 0; i < 8; i++) {
         const front = i < 4;
-        const foalBest = this.geneValue(hPairs[i], front);
-        const foalWorst = 2 - foalBest;
-        best += foalBest;
-        worst += foalWorst;
-      }
-      count++;
-    });
+        const mGene = this.normalize(mPairs[i]);
+        const sGene = this.normalize(sPairs[i]);
 
-    const div = count || 1;
+        // Beste mögliche Kombination → ideal gen
+        const ideal = front ? "HH" : "hh";
+
+        // Simuliere Fohlen-Gen: Wenn beide H tragen → HH, etc.
+        const combos = [mGene[0], sGene[0]]; // beide Eltern
+        const hasH = combos.filter(c => c === "H").length;
+
+        const foalGeneBest =
+          hasH >= 2 ? "HH" : hasH === 1 ? "Hh" : "hh";
+        const foalGeneWorst =
+          hasH === 0 ? "HH" : hasH === 1 ? "Hh" : "hh"; // invers gedacht
+
+        bestScore += this.value(foalGeneBest, front);
+        worstScore += this.value(foalGeneWorst, front);
+      }
+
+      totalBest += bestScore;
+      totalWorst += worstScore;
+    }
+
+    // Durchschnitt pro Merkmal (max. 16 Punkte)
+    if (validTraits === 0) return { best: 0, worst: 0 };
     return {
-      best: Math.round((best / div) * 10) / 10,
-      worst: Math.round((worst / div) * 10) / 10
+      best: totalBest / validTraits,
+      worst: totalWorst / validTraits
     };
   }
 };
