@@ -7,33 +7,42 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>Paarungsanalyse – Exterieur-Matching</h1>
-    <p class="warning">⚠️ Inzucht und die Vererbung des Overo-Gens werden nicht berücksichtigt.</p>
-  </header>
+ <header>
+  <h1>Paarungsanalyse – Exterieur-Matching</h1>
+  <p class="warning">
+    ⚠️ Inzucht und die Vererbung des Overo-Gens werden nicht berücksichtigt.
+  </p>
+</header>
 
-  <section class="info-box">
+<!-- Einklappbare Infobox -->
+<section class="info-box collapsed" id="infoBox">
+  <div class="info-header" id="infoToggle">
+    <span>ℹ️ Info & Score-Interpretation anzeigen</span>
+  </div>
+
+  <div class="info-content">
     <div class="tabs">
       <button class="tab active" data-tab="info">Info zur Berechnung</button>
       <button class="tab" data-tab="score">Score-Interpretation</button>
     </div>
+
     <div class="tab-content active" id="info">
-      <p>Die Hengste werden genetisch mit den Stuten verglichen. 
-         Ziel ist es, das Fohlen dem Idealgenotyp 
+      <p>Die Hengste werden genetisch mit den Stuten verglichen. Ziel ist es, das Fohlen dem Idealgenotyp 
          <strong>HH HH HH HH | hh hh hh hh</strong> möglichst anzunähern.</p>
       <p>Vorne (4 Paare): HH ist optimal → kräftige Ausprägung.<br>
          Hinten (4 Paare): hh ist optimal → harmonische Ausprägung.</p>
     </div>
+
     <div class="tab-content" id="score">
       <p>Für jedes Gen-Paar wird nach mendelschen Regeln simuliert, 
          welche Kombination das Fohlen erhalten könnte. 
          Punkte: vorne HH = 2, Hh = 1, hh = 0 / hinten HH = 0, Hh = 1, hh = 2.</p>
       <p>Der <strong>Best-Score</strong> zeigt die beste mögliche Vererbung, 
-         der <strong>Worst-Score</strong> die ungünstigste. 
-         Hengste mit hohem Best-Score und kleinem Abstand zum Worst-Score 
-         sind ideal.</p>
+         der <strong>Worst-Score</strong> die ungünstigste.</p>
     </div>
-  </section>
+  </div>
+</section>
+
 
   <section class="controls">
     <div>
