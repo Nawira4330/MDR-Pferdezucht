@@ -1,120 +1,116 @@
-// ==============================================
-// GENETIK-BERECHNUNG – Exterieur-Matching-System
-// ==============================================
-// Diese Version:
-// ✅ Unterstützt robustes Spalten-Matching (auch bei Leerzeichen / Schreibfehlern)
-// ✅ Berechnet Scores für jede Stute-Hengst-Kombination individuell
-// ✅ Balanciert Stärken (erhalten) und Schwächen (ausgleichen)
-// ✅ Zeigt per DEBUG-Ausgabe, ob Daten richtig eingelesen wurden
-// ==============================================
+// genetics.js – Berechnet die Exterieur-Kompatibilität zwischen Stute & Hengst
 
-// FRONT (HH-Ziel) – Kraft, Typ, Stabilität
-const SCORE_FRONT = {
-  "HH-HH": 4, "HH-Hh": 3, "HH-hh": 1,
-  "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
-  "hh-HH": 4, "hh-Hh": 3, "hh-hh": 0
-};
-
-// BACK (hh-Ziel) – Elastizität, Losgelassenheit
-const SCORE_BACK = {
-  "HH-HH": 0, "HH-Hh": 2, "HH-hh": 4,
-  "Hh-HH": 1, "Hh-Hh": 3, "Hh-hh": 4,
-  "hh-HH": 2, "hh-Hh": 3, "hh-hh": 4
-};
-
-// Hilfsfunktion: Alle möglichen Fohlenkombinationen (z. B. hh × HH → hH, hH, hH, hH)
-function offspringCombos(sPair, hPair) {
-  const combos = [];
-  if (!sPair || !hPair) return combos;
-  for (const s of sPair) for (const h of hPair) combos.push(s + h);
-  return combos;
-}
-
-// Berechnet Punkte eines einzelnen Genpaars
-function getPairScore(isFront, sPair, hPair) {
-  const table = isFront ? SCORE_FRONT : SCORE_BACK;
-  const combos = offspringCombos(sPair, hPair);
-  const vals = combos.map(c => table[c] ?? 0);
-  return { best: Math.max(...vals, 0), worst: Math.min(...vals, 0) };
-}
-
-// ==============================================
-// 🧠 Robustes Spalten-Matching
-// ==============================================
-function getField(obj, key) {
-  const target = key.toLowerCase().replace(/\s/g, "");
-  const found = Object.keys(obj).find(
-    k => k.toLowerCase().replace(/\s/g, "") === target
-  );
-  return found ? obj[found] : "";
-}
-
-// ==============================================
-// 🔬 Hauptfunktion – Scoreberechnung pro Kombination
-// ==============================================
+/**
+ * Berechne Score für eine Stute–Hengst-Kombination
+ * @param {object} mare - Stutenobjekt
+ * @param {object} stallion - Hengstobjekt
+ * @returns {object} { best: number, worst: number }
+ */
 function calculateScores(mare, stallion) {
   const TRAITS = [
-    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter",
-    "Brust", "Rückenlinie", "Rückenlänge", "Kruppe",
-    "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
+    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
+    "Brust","Rückenlinie","Rückenlänge","Kruppe",
+    "Beinwinkelung","Beinstellung","Fesseln","Hufe"
   ];
 
-  let totalBest = 0, totalWorst = 0, foundAny = false;
-
-  // --- DEBUG-Start ---
-  console.groupCollapsed(`🐎 DEBUG: ${mare.Name} × ${stallion.Name}`);
-  // --- DEBUG-Ende ---
+  let totalBest = 0;
+  let totalWorst = 0;
 
   for (const trait of TRAITS) {
-  const mareVal = (getField(mare, trait) || "")
-  .replace(/["']/g, "")     // Anführungszeichen entfernen
-  .replace(/\s+/g, "")      // Leerzeichen
-  .replace(/\uFEFF/g, "")   // Byte Order Mark
-  .trim();
+    const rawM = getField(mare, trait);
+    const rawH = getField(stallion, trait);
+    if (!rawM || !rawH) continue;
 
-  const stallVal = (getField(stallion, trait) || "")
-  .replace(/["']/g, "")
-  .replace(/\s+/g, "")
-  .replace(/\uFEFF/g, "")
-  .trim();
+    // Säubere Werte (entferne Anführungszeichen, Leerzeichen, BOM)
+    const mareVal = rawM.replace(/["']/g, "").replace(/\s+/g, "").replace(/\uFEFF/g, "").trim();
+    const stallVal = rawH.replace(/["']/g, "").replace(/\s+/g, "").replace(/\uFEFF/g, "").trim();
 
-    if (trait === "Kopf") console.log("RAW", mare.Name, "→", mareVal, "|", stallVal);
+    // Robust: mehrere "|" möglich -> alles verbinden
+    const mParts = mareVal.split("|").map(p => p.trim()).filter(Boolean);
+    const hParts = stallVal.split("|").map(p => p.trim()).filter(Boolean);
+    const mJoined = mParts.join("");
+    const hJoined = hParts.join("");
 
+    // In Zweierpaare zerlegen, nur die ersten 8 Paare verwenden
+    const mPairs = (mJoined.match(/.{1,2}/g) || []).slice(0, 8);
+    const hPairs = (hJoined.match(/.{1,2}/g) || []).slice(0, 8);
 
-    if (!mareVal || !stallVal) continue;
-    if (!mareVal.includes("|") || !stallVal.includes("|")) continue;
-    foundAny = true;
+    if (mPairs.length < 8 || hPairs.length < 8) continue;
 
-    const [mFront, mBack] = mareVal.split("|");
-    const [hFront, hBack] = stallVal.split("|");
+    const mFront = mPairs.slice(0, 4);
+    const mBack = mPairs.slice(4, 8);
+    const hFront = hPairs.slice(0, 4);
+    const hBack = hPairs.slice(4, 8);
 
-    const toPairs = s => (s.match(/.{1,2}/g) || []).slice(0, 8);
-    const mFrontPairs = toPairs(mFront);
-    const mBackPairs = toPairs(mBack);
-    const hFrontPairs = toPairs(hFront);
-    const hBackPairs = toPairs(hBack);
+    let bestTrait = 0;
+    let worstTrait = 0;
 
-    let traitBest = 0, traitWorst = 0;
-
-    // Vordere 4 (Ziel HH)
+    // --- Bewertung vorne (Ziel HH) ---
     for (let i = 0; i < 4; i++) {
-      const { best, worst } = getPairScore(true, mFrontPairs[i], hFrontPairs[i]);
-      traitBest += best; traitWorst += worst;
+      const m = normalizeGene(mFront[i]);
+      const h = normalizeGene(hFront[i]);
+      bestTrait += frontScore(m, h);
+      worstTrait += worstFrontScore(m, h);
     }
 
-    // Hintere 4 (Ziel hh)
+    // --- Bewertung hinten (Ziel hh) ---
     for (let i = 0; i < 4; i++) {
-      const { best, worst } = getPairScore(false, mBackPairs[i], hBackPairs[i]);
-      traitBest += best; traitWorst += worst;
+      const m = normalizeGene(mBack[i]);
+      const h = normalizeGene(hBack[i]);
+      bestTrait += backScore(m, h);
+      worstTrait += worstBackScore(m, h);
     }
 
-    totalBest += traitBest;
-    totalWorst += traitWorst;
-
-    console.log(`➡️ ${trait}: best ${traitBest}, worst ${traitWorst}`);
+    totalBest += bestTrait;
+    totalWorst += worstTrait;
   }
 
-  console.groupEnd();
+  return { best: totalBest, worst: totalWorst };
+}
 
-  return foundAny ? { best: totalBest, worst: totalWorst } : { best: 0, worst: 0 };
+/**
+ * Normalisiert ein Genpaar wie 'hH' oder 'HH' zu standardisierten Großbuchstaben.
+ */
+function normalizeGene(pair) {
+  if (!pair) return "hh";
+  return pair.replace(/[^Hh]/g, "").substring(0, 2).toUpperCase();
+}
+
+// --- Frontbereich (Ziel = HH) ---
+function frontScore(m, h) {
+  const table = {
+    "HHHH": 4, "HHHh": 3, "HHhh": 2,
+    "HhHH": 3, "HhHh": 2, "Hhhh": 1,
+    "hhHH": 2, "hhHh": 1, "hhhh": 0
+  };
+  return table[m + h] ?? 0;
+}
+
+// --- Hinten (Ziel = hh) ---
+function backScore(m, h) {
+  const table = {
+    "HHHH": 0, "HHHh": 1, "HHhh": 2,
+    "HhHH": 1, "HhHh": 2, "Hhhh": 3,
+    "hhHH": 2, "hhHh": 3, "hhhh": 4
+  };
+  return table[m + h] ?? 0;
+}
+
+// --- Worst (umgekehrte Bewertung, also schlechte Ergänzung) ---
+function worstFrontScore(m, h) {
+  const table = {
+    "HHHH": 0, "HHHh": 1, "HHhh": 2,
+    "HhHH": 1, "HhHh": 2, "Hhhh": 3,
+    "hhHH": 4, "hhHh": 3, "hhhh": 2
+  };
+  return table[m + h] ?? 0;
+}
+
+function worstBackScore(m, h) {
+  const table = {
+    "HHHH": 4, "HHHh": 3, "HHhh": 2,
+    "HhHH": 3, "HhHh": 2, "Hhhh": 1,
+    "hhHH": 2, "hhHh": 1, "hhhh": 0
+  };
+  return table[m + h] ?? 0;
 }
