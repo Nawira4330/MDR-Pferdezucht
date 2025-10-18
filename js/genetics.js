@@ -1,5 +1,11 @@
-// genetics.js – Berechnet individuelle Scores für jede Stute-Hengst-Kombination
+// ==========================
+// 🧬 genetics.js
+// Berechnet individuelle Scores für jede Stute-Hengst-Kombination
+// ==========================
 
+/**
+ * Findet ein Feld im CSV-Objekt unabhängig von Groß-/Kleinschreibung und Leerzeichen
+ */
 function getField(obj, key) {
   const target = key.toLowerCase().replace(/\s/g, "");
   const found = Object.keys(obj).find(
@@ -8,6 +14,9 @@ function getField(obj, key) {
   return found ? obj[found] : "";
 }
 
+/**
+ * Normalisiert Gene zu HH, Hh oder hh
+ */
 function normalizeGene(pair) {
   if (!pair) return "hh";
   const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
@@ -17,6 +26,9 @@ function normalizeGene(pair) {
   return "hh";
 }
 
+/**
+ * Punktetabellen für die Berechnung
+ */
 const FRONT = {
   "HH-HH": 4, "HH-Hh": 3, "HH-hh": 1,
   "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
@@ -43,6 +55,9 @@ function backScore(m, h)       { return BACK[`${m}-${h}`] ?? 0; }
 function worstFrontScore(m, h) { return FRONT_WORST[`${m}-${h}`] ?? 0; }
 function worstBackScore(m, h)  { return BACK_WORST[`${m}-${h}`] ?? 0; }
 
+/**
+ * Berechnet Best- & Worst-Scores für alle 14 Merkmale
+ */
 function calculateScores(mare, stallion) {
   const TRAITS = [
     "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
@@ -58,13 +73,16 @@ function calculateScores(mare, stallion) {
     const rawH = getField(stallion, trait);
     if (!rawM || !rawH) continue;
 
+    // 🔹 Säubern der Werte
     const mClean = String(rawM).replace(/["']/g,"").replace(/\s+/g,"").replace(/\uFEFF/g,"").trim();
     const hClean = String(rawH).replace(/["']/g,"").replace(/\s+/g,"").replace(/\uFEFF/g,"").trim();
     if (!mClean || !hClean) continue;
 
+    // 🔹 Alle Genblöcke kombinieren
     const mJoined = mClean.split("|").map(p=>p.trim()).filter(Boolean).join("");
     const hJoined = hClean.split("|").map(p=>p.trim()).filter(Boolean).join("");
 
+    // 🔹 In 8 Paare zerlegen
     const mPairs = (mJoined.match(/.{1,2}/g) || []).slice(0, 8);
     const hPairs = (hJoined.match(/.{1,2}/g) || []).slice(0, 8);
     if (mPairs.length < 8 || hPairs.length < 8) continue;
@@ -77,10 +95,13 @@ function calculateScores(mare, stallion) {
     let traitBest = 0;
     let traitWorst = 0;
 
+    // 🔹 Vorne = Schutz der Stärken (HH bevorzugt)
     for (let i = 0; i < 4; i++) {
       traitBest  += frontScore(mFront[i], hFront[i]);
       traitWorst += worstFrontScore(mFront[i], hFront[i]);
     }
+
+    // 🔹 Hinten = Ausgleich der Schwächen (hh bevorzugt)
     for (let i = 0; i < 4; i++) {
       traitBest  += backScore(mBack[i], hBack[i]);
       traitWorst += worstBackScore(mBack[i], hBack[i]);
@@ -93,4 +114,5 @@ function calculateScores(mare, stallion) {
   return { best: totalBest, worst: totalWorst };
 }
 
-window.calculateScores = calculateScores;
+// 🔹 Export als zentrales Genetics-Objekt für UI.js
+window.Genetics = { calculateScores };
