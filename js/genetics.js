@@ -1,4 +1,35 @@
 const Genetics = {
+    // 🔹 Holt das passende Feld, auch wenn Schreibweise abweicht
+  getField(obj, key) {
+    const target = key.toLowerCase().replace(/\s/g, "");
+    const found = Object.keys(obj).find(
+      k => k.toLowerCase().replace(/\s/g, "") === target
+    );
+    return found ? obj[found] : "";
+  },
+
+  // 🔹 Vereinfacht ein Genpaar auf HH, Hh oder hh
+  normalizeGene(pair) {
+    if (!pair) return "hh";
+    const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
+    const hCount = (clean.match(/H/g) || []).length;
+    if (hCount >= 2) return "HH";
+    if (hCount === 1) return "Hh";
+    return "hh";
+  },
+
+  // 🔹 Bewertet vordere Genpaare (Ziel = HH)
+  frontScore(gene) {
+    const map = { "HH": 2, "Hh": 1, "hh": 0 };
+    return map[gene] ?? 0;
+  },
+
+  // 🔹 Bewertet hintere Genpaare (Ziel = hh)
+  backScore(gene) {
+    const map = { "HH": 0, "Hh": 1, "hh": 2 };
+    return map[gene] ?? 0;
+  },
+  
   calculate(mare, stallion) {
     const TRAITS = [
       "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
