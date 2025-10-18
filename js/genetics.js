@@ -4,8 +4,8 @@ const Genetics = {
   FRONT: { HH: 2, Hh: 1, hh: 0 },
   BACK: { hh: 2, Hh: 1, HH: 0 },
 
-  calculate(mare, stallion) {
-    const traits = [
+   calculate(mare, stallion) {
+    const TRAITS = [
       "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
       "Schulter", "Brust", "Rückenlinie", "Rückenlänge",
       "Kruppe", "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
@@ -13,55 +13,52 @@ const Genetics = {
 
     let totalBest = 0;
     let totalWorst = 0;
+    let countedTraits = 0;
 
-    traits.forEach(trait => {
-      const mareVal = mare[trait] || "";
-      const stallionVal = stallion[trait] || "";
+    for (const trait of TRAITS) {
+      const mareVal = getField(mare, trait);
+      const stallionVal = getField(stallion, trait);
+      if (!mareVal || !stallionVal) continue;
 
-      const [mareFront, mareBack] = mareVal.split("|").map(s => s?.trim() || "");
-      const [stallionFront, stallionBack] = stallionVal.split("|").map(s => s?.trim() || "");
+      const mPairs = (mareVal.match(/.{1,2}/g) || []).slice(0, 8);
+      const sPairs = (stallionVal.match(/.{1,2}/g) || []).slice(0, 8);
+      if (mPairs.length < 8 || sPairs.length < 8) continue;
 
-      const mareFrontGenes = mareFront.split(" ").filter(Boolean);
-      const mareBackGenes = mareBack.split(" ").filter(Boolean);
-      const stallionFrontGenes = stallionFront.split(" ").filter(Boolean);
-      const stallionBackGenes = stallionBack.split(" ").filter(Boolean);
-
-      let bestTrait = 0;
-      let worstTrait = 0;
+      let bestSum = 0;
+      let worstSum = 0;
 
       for (let i = 0; i < 8; i++) {
-        const mF = mareFrontGenes[i] || "hh";
-        const sF = stallionFrontGenes[i] || "hh";
-        const mB = mareBackGenes[i] || "hh";
-        const sB = stallionBackGenes[i] || "hh";
+        const m = normalizeGene(mPairs[i]);
+        const s = normalizeGene(sPairs[i]);
 
-        const combosF = Genetics.cross(mF, sF);
-        const combosB = Genetics.cross(mB, sB);
+        const bestFront = FRONT_SCORE[m + "-" + s] ?? 0;
+        const bestBack  = BACK_SCORE[m + "-" + s] ?? 0;
 
-        const bestF = Math.max(...combosF.map(g => Genetics.FRONT[g] ?? 0));
-        const worstF = Math.min(...combosF.map(g => Genetics.FRONT[g] ?? 0));
-        const bestB = Math.max(...combosB.map(g => Genetics.BACK[g] ?? 0));
-        const worstB = Math.min(...combosB.map(g => Genetics.BACK[g] ?? 0));
+        // Worst analog
+        const worstFront = FRONT_SCORE[s + "-" + m] ?? 0;
+        const worstBack  = BACK_SCORE[s + "-" + m] ?? 0;
 
-        bestTrait += bestF + bestB;
-        worstTrait += worstF + worstB;
+        // 4 vorne + 4 hinten
+        bestSum  += i < 4 ? bestFront : bestBack;
+        worstSum += i < 4 ? worstFront : worstBack;
       }
 
-      // Pro Merkmal: Summe der 8 Genpaare
-      totalBest += bestTrait;
-      totalWorst += worstTrait;
-    });
+      // 👉 Normalisieren auf Skala 0–2
+      const avgBest = bestSum / 8;
+      const avgWorst = worstSum / 8;
 
-    // Gesamtwert: Summe aller Merkmale / 14 (Durchschnitt pro Merkmal)
-    const best = (totalBest / 14).toFixed(2);
-    const worst = (totalWorst / 14).toFixed(2);
+      totalBest += avgBest;
+      totalWorst += avgWorst;
+      countedTraits++;
+    }
 
-    return {
-      best: parseFloat(best),
-      worst: parseFloat(worst)
-    };
-  },
+    // 👉 Mittelwert über alle Merkmale
+    const finalBest = totalBest / countedTraits * 2;
+    const finalWorst = totalWorst / countedTraits * 2;
 
+    return { best: parseFloat(finalBest.toFixed(2)), worst: parseFloat(finalWorst.toFixed(2)) };
+  }
+};
   cross(p1, p2) {
     const alleles1 = p1.split("");
     const alleles2 = p2.split("");
