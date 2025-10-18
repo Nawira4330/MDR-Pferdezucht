@@ -1,20 +1,16 @@
+// tabs.js – Steuert die Infobox-Reiter
 document.addEventListener("DOMContentLoaded", () => {
-  const toggle = document.getElementById("infoToggle");
-  const box = document.getElementById("infoBox");
+  const tabs = document.querySelectorAll(".tab");
+  const contents = document.querySelectorAll(".tab-content");
 
-  toggle.addEventListener("click", () => {
-    box.classList.toggle("collapsed");
-    toggle.textContent = box.classList.contains("collapsed")
-      ? "ℹ️ Info & Score-Erklärung anzeigen"
-      : "⬆️ Informationen ausblenden";
+  if (!tabs.length) return;
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      contents.forEach(c => c.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
   });
 });
-
-function openTab(evt, tabId) {
-  const contents = document.querySelectorAll(".tab-content");
-  const buttons = document.querySelectorAll(".tab-btn");
-  contents.forEach(c => c.classList.remove("active"));
-  buttons.forEach(b => b.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-  evt.currentTarget.classList.add("active");
-}
