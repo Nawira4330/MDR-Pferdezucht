@@ -1,8 +1,6 @@
-// genetics.js – Best/Worst = tatsächlich best-/schlechtest-mögliches Fohlen
-// Skala 0..16; stutenspezifisch je Hengst; robustes Parsing (Leerzeichen/| ignorieren)
+// genetics.js – Stutenspezifische Kreuzung nach Mendel (Best/Worst über alle 8×14 Gene)
 
 const Genetics = {
-  // Feld robust holen (Groß/Klein/Spaces egal)
   getField(obj, key) {
     const target = key.toLowerCase().replace(/\s/g, "");
     const found = Object.keys(obj).find(
@@ -11,95 +9,99 @@ const Genetics = {
     return found ? obj[found] : "";
   },
 
-  // Gen-String -> 8 Zweierpaare (nur H/h)
+  // Holt 8 Genpaare (nur H/h-Zeichen)
   toPairs(str) {
     if (!str) return [];
-    const letters = String(str).replace(/[^Hh]/g, ""); // alles außer H/h raus
+    const letters = str.replace(/[^Hh]/g, "");
     const pairs = [];
-    for (let i = 0; i + 1 < letters.length && pairs.length < 8; i += 2) {
-      pairs.push(letters[i] + letters[i + 1]);
+    for (let i = 0; i < letters.length; i += 2) {
+      if (pairs.length >= 8) break;
+      pairs.push(letters[i] + (letters[i + 1] || ""));
     }
     return pairs;
   },
 
-  // Paar auf HH/Hh/hh normalisieren
-  norm(pair) {
-    if (!pair) return "hh";
+  // HH / Hh / hh vereinheitlichen
+  normalize(pair) {
     const p = pair.replace(/[^Hh]/g, "").slice(0, 2);
     const H = (p.match(/H/g) || []).length;
-    return H >= 2 ? "HH" : H === 1 ? "Hh" : "hh";
+    if (H >= 2) return "HH";
+    if (H === 1) return "Hh";
+    return "hh";
   },
 
-  // Front (Ziel HH) – Punkte je Kind-Gen
-  frontPoints(g) {
-    return g === "HH" ? 2 : g === "Hh" ? 1 : 0;
-  },
-  // Back (Ziel hh) – Punkte je Kind-Gen
-  backPoints(g) {
-    return g === "hh" ? 2 : g === "Hh" ? 1 : 0;
-  },
-
-  // 4 Kind-Genoptionen nach Mendel
-  children(m, s) {
+  // Kind-Gene bilden (alle 4 Möglichkeiten)
+  cross(m, s) {
     const ma = m.replace(/[^Hh]/g, "");
     const sa = s.replace(/[^Hh]/g, "");
     if (ma.length < 2 || sa.length < 2) return [];
-    return [
-      this.norm(ma[0] + sa[0]),
-      this.norm(ma[0] + sa[1]),
-      this.norm(ma[1] + sa[0]),
-      this.norm(ma[1] + sa[1]),
+    const kids = [
+      ma[0] + sa[0], ma[0] + sa[1],
+      ma[1] + sa[0], ma[1] + sa[1]
     ];
+    return kids.map(k => this.normalize(k));
   },
 
-  // Hauptscore
+  // Bewertung: vorne HH optimal, hinten hh optimal
+  scoreGene(gene, front = true) {
+    if (front) return gene === "HH" ? 2 : gene === "Hh" ? 1 : 0;
+    else return gene === "hh" ? 2 : gene === "Hh" ? 1 : 0;
+  },
+
   calculate(mare, stallion) {
     const TRAITS = [
-      "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter","Brust",
-      "Rückenlinie","Rückenlänge","Kruppe","Beinwinkelung","Beinstellung","Fesseln","Hufe"
+      "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
+      "Schulter", "Brust", "Rückenlinie", "Rückenlänge",
+      "Kruppe", "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
     ];
 
-    let totalBest = 0;   // Summe trait-weise (je 0..16)
+    let totalBest = 0;
     let totalWorst = 0;
-    let usedTraits = 0;
+    let traitsUsed = 0;
 
-    for (const t of TRAITS) {
-      const mRaw = this.getField(mare, t);
-      const sRaw = this.getField(stallion, t);
-      if (!mRaw || !sRaw) continue;
+    for (const trait of TRAITS) {
+      const mareVal = this.getField(mare, trait);
+      const stallVal = this.getField(stallion, trait);
+      if (!mareVal || !stallVal) continue;
 
-      const mPairs = this.toPairs(mRaw);
-      const sPairs = this.toPairs(sRaw);
+      const mPairs = this.toPairs(mareVal);
+      const sPairs = this.toPairs(stallVal);
       if (mPairs.length < 8 || sPairs.length < 8) continue;
 
-      // pro Merkmal: 8 Paare → je 0..2 → Summe 0..16
-      let bestTrait = 0;
-      let worstTrait = 0;
+      let traitBest = 0;
+      let traitWorst = 0;
 
       for (let i = 0; i < 8; i++) {
-        const m = this.norm(mPairs[i]);
-        const s = this.norm(sPairs[i]);
-        const kids = this.children(m, s);
-        if (!kids.length) continue;
+        const m = this.normalize(mPairs[i]);
+        const s = this.normalize(sPairs[i]);
+        const children = this.cross(m, s);
+        if (!children.length) continue;
 
-        const scorer = i < 4 ? this.frontPoints.bind(this) : this.backPoints.bind(this);
-        const points = kids.map(scorer);
-        bestTrait  += Math.max(...points); // bestmögliches Kind an dieser Position
-        worstTrait += Math.min(...points); // schlechtestmögliches Kind an dieser Position
+        const isFront = i < 4; // erste 4 vordere Gene, zweite 4 hintere
+
+        const scores = children.map(g => this.scoreGene(g, isFront));
+        const bestGene = Math.max(...scores);
+        const worstGene = Math.min(...scores);
+
+        traitBest += bestGene;
+        traitWorst += worstGene;
       }
 
-      totalBest  += bestTrait;   // 0..16
-      totalWorst += worstTrait;  // 0..16
-      usedTraits++;
+      totalBest += traitBest;
+      totalWorst += traitWorst;
+      traitsUsed++;
     }
 
-    if (!usedTraits) return { best: 0, worst: 0 };
+    if (traitsUsed === 0) return { best: 0, worst: 0 };
 
-    // Normierung: Mittelwert über Merkmale ⇒ 0..16
-    const best = +(totalBest  / usedTraits).toFixed(2);
-    const worst= +(totalWorst / usedTraits).toFixed(2);
+    // Normierung 0–16
+    const finalBest = (totalBest / traitsUsed);
+    const finalWorst = (totalWorst / traitsUsed);
 
-    return { best, worst };
+    return {
+      best: parseFloat(finalBest.toFixed(2)),
+      worst: parseFloat(finalWorst.toFixed(2))
+    };
   }
 };
 
