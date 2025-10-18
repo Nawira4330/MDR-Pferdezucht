@@ -1,109 +1,71 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="css/style.css">
-
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
-    <div class="warning">
-      ⚠️ <b>Wichtiger Hinweis:</b> Inzucht und die doppelte Vererbung des Overo-Gens
-      werden in dieser Analyse <b>nicht</b> berücksichtigt. 
-      Die Ergebnisse dienen ausschließlich der theoretischen Exterieur-Abschätzung.
-    </div>
+    <p class="warning">⚠️ Inzucht und die Vererbung des Overo-Gens werden nicht berücksichtigt.</p>
   </header>
 
-  <!-- INFOBOX (standardmäßig geschlossen) -->
-  <button id="infoToggle" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
-
-  <section id="infoBox" class="info-box collapsed">
-    <div class="tab-buttons">
-      <button class="tab-btn active" onclick="openTab(event, 'tab-info')">Info zur Berechnung der Hengste</button>
-      <button class="tab-btn" onclick="openTab(event, 'tab-score')">Score-Berechnung & Interpretation</button>
+  <section class="info-box">
+    <div class="tabs">
+      <button class="tab active" data-tab="info">Info zur Berechnung</button>
+      <button class="tab" data-tab="score">Score-Interpretation</button>
     </div>
-
-    <div id="tab-info" class="tab-content active">
-      <h2>Wie wird der passende Hengst berechnet?</h2>
-  <p>
-    Für jede Stute werden alle Hengste anhand ihrer Exterieur-Gene verglichen. 
-    Jedes Merkmal besteht aus acht Genpaaren – die ersten vier für den vorderen 
-    Körperbereich (<strong>Front</strong>), die letzten vier für den hinteren 
-    (<strong>Back</strong>).
-  </p>
-  <p>
-    Aus den Genen von Stute und Hengst wird nach mendelschen Regeln berechnet, 
-    welche Kombinationen das Fohlen erhalten könnte. Im Vorderbereich sind 
-    <strong>HH</strong> optimal, hinten <strong>hh</strong>. Dafür gibt es Punkte:
-    vorne HH = 2, Hh = 1, hh = 0; hinten HH = 0, Hh = 1, hh = 2.
-  </p>
-  <p>
-    So entstehen der <strong>Best Score</strong> (beste mögliche Vererbung) und der 
-    <strong>Worst Score</strong> (ungünstigste Vererbung). Die Top 3 Hengste sind 
-    jene, die die Stärken der Stute unterstützen und ihre Schwächen am besten 
-    ausgleichen.
-  </p>
+    <div class="tab-content active" id="info">
+      <p>Die Hengste werden genetisch mit den Stuten verglichen. 
+         Ziel ist es, das Fohlen dem Idealgenotyp 
+         <strong>HH HH HH HH | hh hh hh hh</strong> möglichst anzunähern.</p>
+      <p>Vorne (4 Paare): HH ist optimal → kräftige Ausprägung.<br>
+         Hinten (4 Paare): hh ist optimal → harmonische Ausprägung.</p>
     </div>
-
-    <div id="tab-score" class="tab-content">
-      <h2>Score-Berechnung & Interpretation</h2>
-      <p>
-        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, 
-        Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, 
-        Fesseln, Hufe) werden 8 Gen-Paare analysiert:
-      </p>
-      <p><b>Vorne (4 Paare):</b> Ziel ist HH<br>
-         <b>Hinten (4 Paare):</b> Ziel ist hh</p>
-
-      <table class="score-table">
-        <thead><tr><th>Score</th><th>Bewertung</th></tr></thead>
-        <tbody>
-          <tr><td>15-16</td><td>nahezu perfektes Fohlen</td></tr>
-          <tr><td>11-14</td><td>gute Kombination</td></tr>
-          <tr><td>6-10</td><td>mittelmäßig</td></tr>
-          <tr><td>0–5</td><td>Genetisch unpassend</td></tr>
-        </tbody>
-      </table>
-      <p>
-        Der <b>Best Score</b> zeigt, wie nah das Fohlen an den Idealwert herankommen kann.
-        Der <b>Worst Score</b> zeigt, wie schlecht es im ungünstigsten Fall ausfallen könnte.
-      </p>
+    <div class="tab-content" id="score">
+      <p>Für jedes Gen-Paar wird nach mendelschen Regeln simuliert, 
+         welche Kombination das Fohlen erhalten könnte. 
+         Punkte: vorne HH = 2, Hh = 1, hh = 0 / hinten HH = 0, Hh = 1, hh = 2.</p>
+      <p>Der <strong>Best-Score</strong> zeigt die beste mögliche Vererbung, 
+         der <strong>Worst-Score</strong> die ungünstigste. 
+         Hengste mit hohem Best-Score und kleinem Abstand zum Worst-Score 
+         sind ideal.</p>
     </div>
   </section>
 
-  <!-- FILTERBEREICH -->
-  <section class="filters">
-    <label for="mareSelect">Stute auswählen:</label>
-    <select id="mareSelect"><option value="">– Stute wählen –</option></select>
-
-    <label for="ownerSelect">Besitzer auswählen:</label>
-    <select id="ownerSelect"><option value="">– Besitzer wählen –</option></select>
-
-    <label for="sortSelect">Sortierung:</label>
-    <select id="sortSelect">
-      <option value="best">Bester Score (Best)</option>
-      <option value="worst">Bester Score (Worst)</option>
-      <option value="range">Kleinste Range (Differenz)</option>
-    </select>
-
-    <button id="showAll" class="btn-primary">Alle anzeigen</button>
+  <section class="controls">
+    <div>
+      <label for="mareSelect">Stute:</label>
+      <select id="mareSelect"><option value="">– wählen –</option></select>
+    </div>
+    <div>
+      <label for="ownerSelect">Besitzer:</label>
+      <select id="ownerSelect"><option value="">– wählen –</option></select>
+    </div>
+    <div>
+      <label for="sortSelect">Sortierung:</label>
+      <select id="sortSelect">
+        <option value="best">Bester Score (Best)</option>
+        <option value="worst">Bester Score (Worst)</option>
+        <option value="range">Kleinste Range</option>
+      </select>
+    </div>
+    <button id="showAll">Alle anzeigen</button>
   </section>
 
-  <!-- ERGEBNISSE -->
-  <section id="results"></section>
+  <main id="results"></main>
 
   <footer>
-    © 2025 MDR-Zucht | Entwickelt mit 💗 für die Zuchtplanung
+    © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
   </footer>
 
-  <!-- Skripte -->
-  <script src="js/tabs.js"></script>
-  <script src="js/dataLoader.js"></script>
-  <script src="js/genetics.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Skripte in korrekter Reihenfolge -->
+  <script src="js/tabs.js" defer></script>
+  <script src="js/dataLoader.js" defer></script>
+  <script src="js/genetics.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
