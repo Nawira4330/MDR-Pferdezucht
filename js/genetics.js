@@ -103,3 +103,8 @@ function calculateScores(mare, stallion) {
   return foundAny ? {best:totalBest, worst:totalWorst} : {best:0, worst:0};
 }
 
+console.log("DEBUG", mare.Name, stallion.Name, {
+  kopfMare: mare.Kopf,
+  kopfHengst: stallion.Kopf
+});
+
