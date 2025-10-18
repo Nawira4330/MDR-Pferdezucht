@@ -1,249 +1,277 @@
-/* ===============================
-   🎨 MDR-Zucht Exterieur-Matching
-   =============================== */
+/* ============================
+   Grundlayout & Farben
+============================ */
+:root {
+  --green: #6b9d00;
+  --lightblue: #c8e8ff;
+  --darkgreen: #527700;
+  --text: #222;
+  --bg: #f8fdf8;
+  --white: #ffffff;
+  --gray: #777;
+}
 
-/* === Allgemein === */
 body {
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: #f7f9f6;
   margin: 0;
-  padding: 0;
-  color: #222;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
   line-height: 1.6;
 }
 
-/* === Header mit Farbverlauf === */
+/* ============================
+   Header mit Farbverlauf
+============================ */
 header {
-  background: linear-gradient(90deg, #6b9d00, #4da0b0);
+  background: linear-gradient(90deg, var(--green), var(--lightblue));
   color: white;
   text-align: center;
-  padding: 1.2rem;
-  font-size: 1.6rem;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  padding: 1.5rem 1rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* === Warnbox === */
-.warning-box {
-  max-width: 900px;
-  margin: 1rem auto;
-  background: #fff8d9;
-  color: #665c00;
-  border: 1px solid #f2d600;
-  border-left: 6px solid #f2d600;
-  padding: 1rem;
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+}
+
+/* ============================
+   Warnhinweis
+============================ */
+.warning {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.8rem;
+  display: inline-block;
+  font-weight: 500;
 }
 
-/* === Infobox + Tabs === */
+/* ============================
+   Infobox mit Tabs (eingeklappt)
+============================ */
 .info-box {
   max-width: 900px;
-  margin: 1rem auto;
-  text-align: center;
-}
-
-.toggle-btn {
-  background: #6b9d00;
-  color: white;
-  border: none;
-  padding: 0.7rem 1.3rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.toggle-btn:hover {
-  background: #5b8b00;
-}
-
-.info-tabs {
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #cde0b8;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  margin-top: 1rem;
+  margin: 1.5rem auto;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.tab-header {
+/* Tabs oben */
+.tab-buttons {
   display: flex;
-  border-bottom: 1px solid #cde0b8;
+  justify-content: space-evenly;
+  background: var(--lightblue);
 }
 
 .tab-btn {
   flex: 1;
-  padding: 0.7rem;
+  padding: 0.8rem;
   cursor: pointer;
-  background: #f2f8ed;
   border: none;
-  border-right: 1px solid #cde0b8;
+  background: none;
   font-weight: 600;
-  transition: background 0.3s;
-}
-
-.tab-btn:last-child {
-  border-right: none;
+  color: var(--darkgreen);
+  transition: all 0.2s ease;
 }
 
 .tab-btn:hover {
-  background: #e8f3dd;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .tab-btn.active {
-  background: #6b9d00;
+  background: var(--green);
   color: white;
 }
 
+/* Tab Inhalte */
 .tab-content {
   display: none;
-  text-align: left;
-  padding: 1rem 1.3rem;
+  padding: 1rem 1.5rem;
 }
 
 .tab-content.active {
   display: block;
 }
 
-.info-tabs table {
-  border-collapse: collapse;
+/* Wenn eingeklappt */
+.info-box.collapsed .tab-content {
+  display: none !important;
+}
+
+/* Toggle-Button */
+.info-toggle {
+  display: block;
   width: 100%;
-  margin-top: 0.5rem;
-}
-
-.info-tabs td {
-  border: 1px solid #d6e6c6;
-  padding: 0.4rem 0.6rem;
-}
-
-.info-tabs td:first-child {
-  width: 120px;
-  font-weight: bold;
-  background: #f2f8ed;
-}
-
-.hidden {
-  display: none;
-}
-
-/* === Kontrollbereich (Filter, Sortierung) === */
-.control-panel {
-  max-width: 900px;
-  background: #f6fbf1;
-  border: 1px solid #d6e6c6;
-  padding: 1rem;
-  margin: 1rem auto;
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-}
-
-.control-panel label {
-  font-weight: 600;
-  color: #333;
-}
-
-.control-panel select {
-  padding: 0.4rem 0.6rem;
-  border-radius: 5px;
-  border: 1px solid #cde0b8;
-  background: white;
-  font-size: 0.95rem;
-}
-
-.control-panel button {
-  background: #6b9d00;
+  background: var(--darkgreen);
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.6rem;
+  text-align: center;
   cursor: pointer;
   font-weight: 600;
+  border: none;
   transition: background 0.3s;
 }
 
-.control-panel button:hover {
-  background: #5b8b00;
+.info-toggle:hover {
+  background: var(--green);
 }
 
-/* === Ergebnis-Karten === */
+/* ============================
+   Filtersektion
+============================ */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.2rem;
+  background: white;
+  border-radius: 10px;
+  max-width: 900px;
+  margin: 1rem auto;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+.filters label {
+  font-weight: 600;
+}
+
+.filters select,
+.filters button {
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+.filters select:focus {
+  outline: 2px solid var(--green);
+}
+
+.btn-primary {
+  background: var(--green);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--darkgreen);
+}
+
+/* ============================
+   Ergebnisbereich
+============================ */
+#results {
+  max-width: 900px;
+  margin: 1.5rem auto;
+}
+
 .mare-card {
   background: white;
-  border: 1px solid #e2e8dc;
-  border-left: 6px solid #6b9d00;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  margin: 1rem auto;
+  border-radius: 10px;
   padding: 1rem 1.2rem;
-  max-width: 900px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.mare-card:hover {
+  transform: scale(1.01);
 }
 
 .mare-card h3 {
-  color: #6b9d00;
-  margin: 0;
-  font-size: 1.25rem;
+  color: var(--green);
+  margin-bottom: 0.2rem;
 }
 
 .mare-card p {
-  margin: 0.3rem 0;
+  margin: 0.2rem 0;
 }
 
-/* === Stallion-Einträge === */
+/* Hengst-Einträge */
 .stallion-entry {
-  background: #f8fcf5;
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
+  background: var(--lightblue);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
   margin: 0.4rem 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid #e2e8dc;
+  font-size: 0.95rem;
 }
 
-.stallion-entry:nth-child(odd) {
-  background: #f2f8ed;
+.stallion-entry strong {
+  color: var(--darkgreen);
 }
 
-.stallion-entry .tag {
-  background: #cde6a5;
-  color: #2a4200;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+.tag {
+  background: var(--green);
+  color: white;
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
   font-size: 0.85rem;
-  font-weight: 600;
   margin-left: 0.5rem;
 }
 
-.stallion-entry .score {
-  font-weight: 700;
-  color: #005ca3;
-  font-size: 0.9rem;
+.score {
+  float: right;
+  color: var(--darkgreen);
+  font-weight: bold;
 }
 
-/* === Responsive === */
-@media (max-width: 768px) {
-  .control-panel {
+/* ============================
+   Tabellen & Footer
+============================ */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.score-table th,
+.score-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.score-table th {
+  background: var(--lightblue);
+  color: var(--darkgreen);
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+  background: #f1f1f1;
+  margin-top: 2rem;
+  border-top: 2px solid var(--lightblue);
+}
+
+/* ============================
+   Responsive
+============================ */
+@media (max-width: 700px) {
+  header h1 {
+    font-size: 1.4rem;
+  }
+  .filters {
     flex-direction: column;
     align-items: stretch;
   }
-  .stallion-entry {
-    flex-direction: column;
-    align-items: flex-start;
+  .filters label {
+    margin-top: 0.5rem;
   }
-}
-
-/* === Footer === */
-footer {
-  background: #6b9d00;
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  font-weight: 500;
-  margin-top: 2rem;
+  .stallion-entry .score {
+    float: none;
+    display: block;
+    margin-top: 0.3rem;
+  }
 }
