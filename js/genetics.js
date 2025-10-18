@@ -66,8 +66,20 @@ function calculateScores(mare, stallion) {
   // --- DEBUG-Ende ---
 
   for (const trait of TRAITS) {
-    const mareVal = (getField(mare, trait) || "").replace(/\s+/g, "");
-    const stallVal = (getField(stallion, trait) || "").replace(/\s+/g, "");
+  const mareVal = (getField(mare, trait) || "")
+  .replace(/["']/g, "")     // Anführungszeichen entfernen
+  .replace(/\s+/g, "")      // Leerzeichen
+  .replace(/\uFEFF/g, "")   // Byte Order Mark
+  .trim();
+
+  const stallVal = (getField(stallion, trait) || "")
+  .replace(/["']/g, "")
+  .replace(/\s+/g, "")
+  .replace(/\uFEFF/g, "")
+  .trim();
+
+    if (trait === "Kopf") console.log("RAW", mare.Name, "→", mareVal, "|", stallVal);
+
 
     if (!mareVal || !stallVal) continue;
     if (!mareVal.includes("|") || !stallVal.includes("|")) continue;
