@@ -1,117 +1,80 @@
 // ==========================
 // 🎨 ui.js
-// Rendert Stuten- & Hengst-Ergebnisse
+// Darstellung, Filterung & Sortierung
 // ==========================
 
-const UI = (() => {
-  /**
-   * Hauptfunktion zum Anzeigen der Ergebnisse
-   * @param {string} selectedMare - Name der ausgewählten Stute (optional)
-   * @param {string} selectedOwner - Name des Besitzers (optional)
-   * @param {string} sortMode - Sortiermodus ("best", "worst", "range")
-   */
-  function showResults(selectedMare = "", selectedOwner = "", sortMode = "best") {
-    const container = document.getElementById("results");
-    container.innerHTML = "";
+function renderResults(mares, stallions, selectedMare, selectedOwner, sortOption) {
+  const resultsContainer = document.getElementById("results");
+  resultsContainer.innerHTML = "";
 
-    if (!window.mares || !window.stallions) {
-      container.innerHTML = "<p style='color:red;'>❌ Daten konnten nicht geladen werden.</p>";
-      return;
-    }
+  const filteredMares = mares.filter(
+    m =>
+      (!selectedMare || m.Name === selectedMare) &&
+      (!selectedOwner || m.Besitzer === selectedOwner)
+  );
 
-    // --- Filtern nach Auswahl ---
-    let filteredMares = window.mares;
+  if (filteredMares.length === 0) {
+    resultsContainer.innerHTML =
+      "<p style='text-align:center;color:#777;'>Keine passenden Stuten gefunden.</p>";
+    return;
+  }
 
-    if (selectedMare) {
-      filteredMares = filteredMares.filter((m) => m["Name"] === selectedMare);
-    } else if (selectedOwner) {
-      filteredMares = filteredMares.filter((m) => m["Besitzer"] === selectedOwner);
-    }
+  filteredMares.forEach(mare => {
+    const mareDiv = document.createElement("div");
+    mareDiv.classList.add("mare-card");
 
-    if (filteredMares.length === 0) {
-      container.innerHTML = `
-        <p style="text-align:center; color:#777;">Keine passenden Stuten gefunden.</p>
-      `;
-      return;
-    }
+    mareDiv.innerHTML = `
+      <h3>${mare.Name}</h3>
+      <p><b>Besitzer:</b> ${mare.Besitzer || "-"}</p>
+      <p>${mare.Farbgenetik ? mare.Farbgenetik : ""}</p>
+    `;
 
-    // --- Jede Stute anzeigen ---
-    filteredMares.forEach((mare) => {
-      const mareCard = document.createElement("div");
-      mareCard.className = "mare-card";
+    // 🔹 Berechne Score für jeden Hengst
+    const stallionScores = stallions
+      .map(stallion => ({
+        stallion,
+        score: Genetics.calculateScores(mare, stallion),
+      }))
+      .filter(s => s.score.best > 0 || s.score.worst > 0);
 
-      // Titel und Besitzer
-      const mareName = mare["Name"] || "(Unbenannt)";
-      const owner = mare["Besitzer"] || "Unbekannt";
-      const color = mare["Farbgenetik"] || "-";
-
-      mareCard.innerHTML = `
-        <h3>${mareName}</h3>
-        <p><strong>Besitzer:</strong> ${owner}</p>
-        <p>${color}</p>
-      `;
-
-      // --- Hengst-Berechnung ---
-      const stallionResults = [];
-
-      window.stallions.forEach((stallion) => {
-        const geneticsScore = calculateScores(mare, stallion);
-        if (geneticsScore.best > 0 || geneticsScore.worst > 0) {
-          stallionResults.push({
-            name: stallion["Name"] || "(Unbekannt)",
-            color: stallion["Farbgenetik"] || "-",
-            best: geneticsScore.best,
-            worst: geneticsScore.worst,
-          });
-        }
-      });
-
-      if (stallionResults.length === 0) {
-        mareCard.innerHTML += `<p style="color:#888;">Keine genetisch passenden Hengste gefunden.</p>`;
-      } else {
-        // --- Sortierung ---
-        if (sortMode === "best") {
-          stallionResults.sort((a, b) => b.best - a.best);
-        } else if (sortMode === "worst") {
-          stallionResults.sort((a, b) => b.worst - a.worst);
-        } else if (sortMode === "range") {
-          stallionResults.sort((a, b) => (a.best - a.worst) - (b.best - b.worst));
-        }
-
-        // --- Nur Top 3 ---
-        const top3 = stallionResults.slice(0, 3);
-
-        // --- Anzeige ---
-        top3.forEach((stallion, index) => {
-          const medal = ["🥇", "🥈", "🥉"][index] || "";
-          const entry = document.createElement("div");
-          entry.className = "stallion-entry";
-
-          entry.innerHTML = `
-            <span>${medal} ${stallion.name}</span>
-            <span class="tag">${stallion.color}</span>
-            <span class="score">Best: ${stallion.best} / Worst: ${stallion.worst}</span>
-          `;
-          mareCard.appendChild(entry);
-        });
-      }
-
-      container.appendChild(mareCard);
+    // 🔹 Sortierung
+    stallionScores.sort((a, b) => {
+      if (sortOption === "best") return b.score.best - a.score.best;
+      if (sortOption === "worst") return b.score.worst - a.score.worst;
+      const rangeA = a.score.best - a.score.worst;
+      const rangeB = b.score.best - b.score.worst;
+      return rangeA - rangeB;
     });
-  }
 
-  /**
-   * Berechnet Score zwischen Stute & Hengst
-   * (delegiert an Genetics-Modul)
-   */
-  function calculateScores(mare, stallion) {
-    if (typeof Genetics === "undefined" || !Genetics.comparePair) {
-      console.error("❌ Genetics-Modul nicht gefunden!");
-      return { best: 0, worst: 0 };
+    // 🔹 Top 3
+    const top3 = stallionScores.slice(0, 3);
+    if (top3.length === 0) {
+      mareDiv.innerHTML += "<p style='color:#888;'>Keine passenden Hengste gefunden.</p>";
     }
-    return Genetics.calculateScores(mare, stallion);
-  }
 
-  // Öffentlich machen
-  return { showResults };
-})();
+    top3.forEach((entry, i) => {
+      const medal = ["🥇", "🥈", "🥉"][i];
+      const stallionName =
+        entry.stallion.Name && entry.stallion.Name.trim() !== ""
+          ? entry.stallion.Name
+          : "(Unbekannt)";
+      const stallionColor =
+        entry.stallion.Farbgenetik ||
+        entry.stallion["Farbe"] ||
+        "-";
+
+      const sDiv = document.createElement("div");
+      sDiv.classList.add("stallion-entry");
+      sDiv.innerHTML = `
+        <p>${medal} <b>${stallionName}</b>
+        <span class="tag">${stallionColor}</span>
+        <span class="score">Best: ${entry.score.best} / Worst: ${entry.score.worst}</span></p>
+      `;
+      mareDiv.appendChild(sDiv);
+    });
+
+    resultsContainer.appendChild(mareDiv);
+  });
+}
+
+window.renderResults = renderResults;
