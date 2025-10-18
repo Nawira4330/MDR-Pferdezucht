@@ -52,7 +52,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const mareName = mareSelect.value || null;
       const ownerName = ownerSelect.value || null;
       const sortOpt = sortSelect.value || "best";
-      UI.render(mares, stallions, mareName, ownerName, sortOpt);
+
+      // 🔸 Wenn keine Stute gewählt ist → alphabetisch sortieren
+      let maresToRender = mares;
+      if (!mareName) {
+        maresToRender = [...mares].sort((a, b) => a.Name.localeCompare(b.Name, "de"));
+      }
+
+      UI.render(maresToRender, stallions, mareName, ownerName, sortOpt);
     }
 
     // 🔹 Event Listener
@@ -61,11 +68,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     sortSelect.addEventListener("change", updateResults);
 
     allBtn.addEventListener("click", () => {
-      UI.render(mares, stallions, null, null, sortSelect.value);
+      // Alphabetisch sortieren bei "Alle anzeigen"
+      const maresSorted = [...mares].sort((a, b) => a.Name.localeCompare(b.Name, "de"));
+      UI.render(maresSorted, stallions, null, null, sortSelect.value);
     });
 
-    // 🔹 Initialanzeige – leerer Zustand oder „Alle anzeigen“
-    UI.render(mares, stallions, null, null, "best");
+    // 🔹 Initialanzeige – alphabetisch sortiert
+    const maresSorted = [...mares].sort((a, b) => a.Name.localeCompare(b.Name, "de"));
+    UI.render(maresSorted, stallions, null, null, "best");
 
   } catch (err) {
     console.error("❌ Fehler beim Laden der Daten:", err);
