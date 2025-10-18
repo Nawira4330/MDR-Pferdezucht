@@ -1,80 +1,48 @@
-// ==========================
-// 🎨 ui.js
-// Darstellung, Filterung & Sortierung
-// ==========================
+// Anzeige der Ergebnisse
+const UI = {
+  render(mares, stallions, selMare, selOwner, sortOpt) {
+    const results = document.getElementById("results");
+    results.innerHTML = "";
 
-function renderResults(mares, stallions, selectedMare, selectedOwner, sortOption) {
-  const resultsContainer = document.getElementById("results");
-  resultsContainer.innerHTML = "";
+    const filtered = mares.filter(
+      m =>
+        (!selMare || m.Name === selMare) &&
+        (!selOwner || m.Besitzer === selOwner)
+    );
 
-  const filteredMares = mares.filter(
-    m =>
-      (!selectedMare || m.Name === selectedMare) &&
-      (!selectedOwner || m.Besitzer === selectedOwner)
-  );
-
-  if (filteredMares.length === 0) {
-    resultsContainer.innerHTML =
-      "<p style='text-align:center;color:#777;'>Keine passenden Stuten gefunden.</p>";
-    return;
-  }
-
-  filteredMares.forEach(mare => {
-    const mareDiv = document.createElement("div");
-    mareDiv.classList.add("mare-card");
-
-    mareDiv.innerHTML = `
-      <h3>${mare.Name}</h3>
-      <p><b>Besitzer:</b> ${mare.Besitzer || "-"}</p>
-      <p>${mare.Farbgenetik ? mare.Farbgenetik : ""}</p>
-    `;
-
-    // 🔹 Berechne Score für jeden Hengst
-    const stallionScores = stallions
-      .map(stallion => ({
-        stallion,
-        score: Genetics.calculateScores(mare, stallion),
-      }))
-      .filter(s => s.score.best > 0 || s.score.worst > 0);
-
-    // 🔹 Sortierung
-    stallionScores.sort((a, b) => {
-      if (sortOption === "best") return b.score.best - a.score.best;
-      if (sortOption === "worst") return b.score.worst - a.score.worst;
-      const rangeA = a.score.best - a.score.worst;
-      const rangeB = b.score.best - b.score.worst;
-      return rangeA - rangeB;
-    });
-
-    // 🔹 Top 3
-    const top3 = stallionScores.slice(0, 3);
-    if (top3.length === 0) {
-      mareDiv.innerHTML += "<p style='color:#888;'>Keine passenden Hengste gefunden.</p>";
+    if (!filtered.length) {
+      results.innerHTML = "<p style='text-align:center;color:#777;'>Keine Stuten gefunden.</p>";
+      return;
     }
 
-    top3.forEach((entry, i) => {
-      const medal = ["🥇", "🥈", "🥉"][i];
-      const stallionName =
-        entry.stallion.Name && entry.stallion.Name.trim() !== ""
-          ? entry.stallion.Name
-          : "(Unbekannt)";
-      const stallionColor =
-        entry.stallion.Farbgenetik ||
-        entry.stallion["Farbe"] ||
-        "-";
+    filtered.forEach(mare => {
+      const div = document.createElement("div");
+      div.className = "mare-card";
+      div.innerHTML = `<h3>${mare.Name}</h3>
+        <p><b>Besitzer:</b> ${mare.Besitzer || "-"}<br>
+        <b>Farbgenetik:</b> ${mare.Farbgenetik || "-"}</p>`;
 
-      const sDiv = document.createElement("div");
-      sDiv.classList.add("stallion-entry");
-      sDiv.innerHTML = `
-        <p>${medal} <b>${stallionName}</b>
-        <span class="tag">${stallionColor}</span>
-        <span class="score">Best: ${entry.score.best} / Worst: ${entry.score.worst}</span></p>
-      `;
-      mareDiv.appendChild(sDiv);
+      const scores = stallions.map(s => ({
+        stallion: s,
+        score: Genetics.calculate(mare, s)
+      }));
+
+      if (sortOpt === "best") scores.sort((a,b)=>b.score.best-a.score.best);
+      else if (sortOpt === "worst") scores.sort((a,b)=>b.score.worst-a.score.worst);
+      else scores.sort((a,b)=>(a.score.best-a.score.worst)-(b.score.best-b.score.worst));
+
+      scores.slice(0,3).forEach((entry,i)=>{
+        const medal=["🥇","🥈","🥉"][i];
+        div.innerHTML += `<div class="stallion-entry">
+          ${medal} <b>${entry.stallion.Name||"(Unbekannt)"}</b>
+          <span class="tag">${entry.stallion.Farbgenetik||"-"}</span>
+          <span class="score">Best: ${entry.score.best} / Worst: ${entry.score.worst}</span>
+        </div>`;
+      });
+
+      results.appendChild(div);
     });
+  }
+};
 
-    resultsContainer.appendChild(mareDiv);
-  });
-}
-
-window.renderResults = renderResults;
+window.UI = UI;
