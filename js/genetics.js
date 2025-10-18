@@ -1,7 +1,7 @@
-// genetics.js – robuste, stutenindividuelle Berechnung (Skala 0–16)
+// genetics.js – Mit Matching-Bias für Stutenspezifische Bewertung
 
 const Genetics = {
-  // passendes Feld tolerant finden
+  // 🔹 Holt das passende Feld auch bei leicht abweichender Schreibweise
   getField(obj, key) {
     const target = key.toLowerCase().replace(/\s/g, "");
     const found = Object.keys(obj).find(
@@ -10,18 +10,18 @@ const Genetics = {
     return found ? obj[found] : "";
   },
 
-  // nur H/h extrahieren, in 8 Paare (16 Buchstaben) schneiden
+  // 🔹 Nur H/h-Zeichen extrahieren und in 8 Genpaare schneiden
   getPairs(str) {
     if (!str) return [];
-    const letters = String(str).replace(/[^Hh]/g, ""); // ALLES außer H/h entfernen (inkl. '|', Leerz., Kommas)
+    const letters = String(str).replace(/[^Hh]/g, "");
     const pairs = [];
     for (let i = 0; i + 1 < letters.length && pairs.length < 8; i += 2) {
       pairs.push(letters[i] + letters[i + 1]);
     }
-    return pairs; // max. 8 Einträge
+    return pairs;
   },
 
-  // HH/Hh/hh normalisieren
+  // 🔹 Vereinfacht Genpaar auf HH, Hh oder hh
   normalizeGene(pair) {
     if (!pair) return "hh";
     const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
@@ -31,21 +31,20 @@ const Genetics = {
     return "hh";
   },
 
-  // Front-Punkte (Ziel HH)
+  // 🔹 Bewertet vordere Genpaare (Ziel HH)
   frontScore(gene) {
     const map = { "HH": 2, "Hh": 1, "hh": 0 };
     return map[gene] ?? 0;
   },
 
-  // Back-Punkte (Ziel hh)
+  // 🔹 Bewertet hintere Genpaare (Ziel hh)
   backScore(gene) {
     const map = { "HH": 0, "Hh": 1, "hh": 2 };
     return map[gene] ?? 0;
   },
 
-  // Mendel-Kreuzung: aus Elternpaar (m, s) alle 4 möglichen Kind-Paare
+  // 🔹 Alle möglichen Kind-Gene nach Mendel kombinieren
   childOptions(m, s) {
-    // m und s sind "HH" | "Hh" | "hh"
     const ma = m.replace(/[^Hh]/g, "");
     const sa = s.replace(/[^Hh]/g, "");
     if (ma.length < 2 || sa.length < 2) return [];
@@ -57,7 +56,7 @@ const Genetics = {
     ];
   },
 
-  // Hauptberechnung
+  // 🔹 Hauptberechnung
   calculate(mare, stallion) {
     const TRAITS = [
       "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
@@ -84,32 +83,49 @@ const Genetics = {
       for (let i = 0; i < 8; i++) {
         const m = this.normalizeGene(mPairs[i]);
         const s = this.normalizeGene(sPairs[i]);
-
         const children = this.childOptions(m, s);
         if (!children.length) continue;
 
-        // je nach Position (0–3 vorne, 4–7 hinten) bewerten
-        const scores = children.map(g =>
-          (i < 4 ? this.frontScore(g) : this.backScore(g))
-        );
+        const isFront = i < 4; // vordere oder hintere Hälfte
+        let scores = [];
 
-        bestSum  += Math.max(...scores); // beste mögliche Ausprägung
-        worstSum += Math.min(...scores); // schlechteste mögliche Ausprägung
+        for (const g of children) {
+          const base = isFront ? this.frontScore(g) : this.backScore(g);
+          let adjust = 1;
+
+          // 🔹 Matching-Bias:
+          if (isFront) {
+            // Vorne → Stute schwach -> Hengst stark = Vorteil
+            if (m === "hh" && g === "HH") adjust = 1.3;
+            else if (m === "HH" && g === "HH") adjust = 0.9;
+            else if (m === "hh" && g === "hh") adjust = 0.9;
+          } else {
+            // Hinten → Stute stark -> Hengst schwach = Vorteil
+            if (m === "HH" && g === "hh") adjust = 1.3;
+            else if (m === "hh" && g === "hh") adjust = 0.9;
+            else if (m === "HH" && g === "HH") adjust = 0.9;
+          }
+
+          scores.push(base * adjust);
+        }
+
+        bestSum += Math.max(...scores);
+        worstSum += Math.min(...scores);
       }
 
-      totalBest  += bestSum;  // Bereich 0–16 pro Merkmal
+      totalBest += bestSum;
       totalWorst += worstSum;
       countedTraits++;
     }
 
     if (countedTraits === 0) return { best: 0, worst: 0 };
 
-    // ⬇️ Mittelwert über Merkmale -> Skala 0–16
-    const finalBest  = totalBest  / countedTraits;
-    const finalWorst = totalWorst / countedTraits;
+    // 🔹 Skala 0–16 über alle Merkmale
+    const finalBest = (totalBest / (countedTraits * 8)) * 16;
+    const finalWorst = (totalWorst / (countedTraits * 8)) * 16;
 
     return {
-      best:  +finalBest.toFixed(2),
+      best: +finalBest.toFixed(2),
       worst: +finalWorst.toFixed(2)
     };
   }
