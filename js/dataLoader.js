@@ -6,19 +6,27 @@ async function loadCSV(url) {
   return parseCSV(text);
 }
 
-// Einfache, aber robuste CSV-Parsing-Funktion
+// 🔹 Robustes CSV-Parsing mit fester Spaltenanzahl
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(",").map(h => h.trim().replace(/\uFEFF/g, ""));
+  const headers = lines[0]
+    .split(",")
+    .map(h => h.trim().replace(/\uFEFF/g, ""));
+
   return lines.slice(1).map(line => {
-    const values = line.split(",").map(v => v.replace(/^"|"$/g, "").trim());
+    const values = line
+      .split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/) // Kommas in Anführungszeichen ignorieren
+      .map(v => v.replace(/^"|"$/g, "").trim());
+
+    while (values.length < headers.length) values.push(""); // fehlende Felder auffüllen
+
     const obj = {};
     headers.forEach((h, i) => (obj[h] = values[i] || ""));
     return obj;
   });
 }
 
-// Bereinigt BOM, Whitespaces und falsche Zeichen
+// 🔹 Entfernt BOM, Anführungszeichen und überflüssige Leerzeichen
 function cleanCSVData(data) {
   return data.map(row => {
     const cleaned = {};
@@ -32,6 +40,7 @@ function cleanCSVData(data) {
   });
 }
 
+// 🔹 Lädt Stuten & Hengste (ignoriert leere Datensätze)
 async function loadData() {
   const maresUrl =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZE4HXc1di-ym2n79-_9Rc-vxHbMMniRXmgq1woBSha0MjvANgvYFoqH4w7E2LA/pub?output=csv";
