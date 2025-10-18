@@ -1,85 +1,121 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Paarungsanalyse – Exterieur-Matching</h1>
-    <div class="warning-box">
-      ⚠️ <strong>Hinweis:</strong> Inzucht und Doppelvererbung des Overo-Gens werden nicht berücksichtigt.
-    </div>
+    Paarungsanalyse – Exterieur-Matching
   </header>
 
-  <!-- Info-Reiter -->
-  <section class="info-box">
-    <button id="toggleInfo" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
-    <div id="infoTabs" class="hidden">
-      <div class="tabs">
-        <button class="tab active" data-tab="tab1">Info zur Berechnung</button>
-        <button class="tab" data-tab="tab2">Score-Berechnung & Interpretation</button>
+  <!-- ⚠️ Dauerhafte Warnbox -->
+  <div class="warning-box">
+    ⚠️ <strong>Wichtiger Hinweis:</strong> Inzucht und die doppelte Vererbung des Overo-Gens 
+    werden in dieser Analyse <u>nicht</u> berücksichtigt.  
+    Die Ergebnisse dienen ausschließlich der theoretischen Exterieur-Abschätzung.
+  </div>
+
+  <!-- 📘 Infobox (standardmäßig geschlossen) -->
+  <div class="info-box">
+    <button id="toggleInfo" class="toggle-btn">ℹ️ Info & Score-Erklärung anzeigen</button>
+
+    <div id="infoTabs" class="info-tabs hidden">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="info">Info zur Berechnung</button>
+        <button class="tab-btn" data-tab="score">Score-Erklärung</button>
       </div>
-      <div id="tab1" class="tab-content active">
+
+      <div class="tab-content active" id="info">
         <h2>Info zur Berechnung der Hengste</h2>
         <p>
-          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.  
-          Ziel ist das Fohlen mit dem Idealwert <strong>HH HH HH HH | hh hh hh hh</strong>.
+          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale berechnet. 
+          Ziel ist ein Fohlen mit idealer Kombination:
+          <strong>HH HH HH HH | hh hh hh hh</strong>
         </p>
         <ul>
-          <li>Vordere 4 Paare → HH (Ziel: Kraft, Aufrichtung)</li>
-          <li>Hintere 4 Paare → hh (Ziel: Harmonie, Balance)</li>
-          <li>Jede Paarung wird genetisch bewertet, um optimale Ergänzungen zu finden.</li>
+          <li>Stärken der Stute werden geschützt</li>
+          <li>Schwächen werden ausgeglichen</li>
+          <li>Bewertung erfolgt für 14 Exterieurmerkmale</li>
         </ul>
       </div>
-      <div id="tab2" class="tab-content">
-        <h3>Score-Berechnung & Interpretation</h3>
+
+      <div class="tab-content" id="score">
+        <h2>Score-Berechnung und Interpretation</h2>
         <p>
-          Für jedes der 14 Exterieur-Merkmale (Kopf → Hufe) werden 8 Gen-Paare bewertet.  
-          Pro Paar sind 4 Punkte möglich → max. 32 pro Merkmal → 448 Gesamt.
+          Jedes Merkmal hat 8 Genpaare – die vorderen 4 sollen „HH“ (stark), die hinteren 4 „hh“ (weich) ergeben.  
+          Ein Merkmal kann bis zu <strong>32 Punkte</strong> bringen (8 × 4 Punkte).
         </p>
         <table>
-          <tr><th>Score</th><th>Bewertung</th></tr>
-          <tr><td>400 – 448</td><td>Nahezu perfekte Kombination</td></tr>
-          <tr><td>300 – 400</td><td>Sehr gute, empfohlene Paarung</td></tr>
-          <tr><td>200 – 300</td><td>Solide Kombination mit Potenzial</td></tr>
-          <tr><td>100 – 200</td><td>Genetisch eher ungünstig</td></tr>
-          <tr><td>0 – 100</td><td>Nicht empfohlen</td></tr>
+          <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
+          <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
+          <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
+          <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
+          <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
         </table>
+        <p>Die Berechnung berücksichtigt sowohl die besten als auch die schlechtesten Vererbungsmöglichkeiten.</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Auswahl -->
-  <section id="controls">
-    <label>Stute auswählen:
-      <select id="mareSelect"><option>– Stute wählen –</option></select>
-    </label>
-    <label>Besitzer auswählen:
-      <select id="ownerSelect"><option>– Besitzer wählen –</option></select>
-    </label>
-    <label>Sortierung:
-      <select id="sortSelect">
-        <option value="range">Kleinste Range (Differenz)</option>
-        <option value="best">Bester Score (Best)</option>
-        <option value="worst">Bester Score (Worst)</option>
-      </select>
-    </label>
+  <!-- 🧩 Filter & Sortierung -->
+  <div class="control-panel">
+    <label for="mareSelect">Stute auswählen:</label>
+    <select id="mareSelect">
+      <option value="">– Stute wählen –</option>
+    </select>
+
+    <label for="ownerSelect">Besitzer auswählen:</label>
+    <select id="ownerSelect">
+      <option value="">– Besitzer wählen –</option>
+    </select>
+
+    <label for="sortSelect">Sortierung:</label>
+    <select id="sortSelect">
+      <option value="range">Kleinste Range (Differenz)</option>
+      <option value="best">Bester Score (Best)</option>
+      <option value="worst">Bester Score (Worst)</option>
+    </select>
+
     <button id="showAll">Alle anzeigen</button>
-  </section>
+  </div>
 
+  <!-- 🧮 Ergebnisse -->
   <main id="results"></main>
 
   <footer>
-    @ 2025 MDR-Zucht | Entwickelt mit 💚 für die Zuchtplanung
+    © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
   </footer>
 
-  <script src="js/dataLoader.js"></script>
+  <!-- 🔗 JS-Dateien -->
+  <script src="js/dataloader.js"></script>
   <script src="js/genetics.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
 
+  <!-- 💡 Tabs- und Info-Steuerung -->
+  <script>
+    // Tabs wechseln
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // Infobox öffnen/schließen
+    const toggleButton = document.getElementById("toggleInfo");
+    const infoTabs = document.getElementById("infoTabs");
+    toggleButton.addEventListener("click", () => {
+      infoTabs.classList.toggle("hidden");
+      toggleButton.textContent = infoTabs.classList.contains("hidden")
+        ? "ℹ️ Info & Score-Erklärung anzeigen"
+        : "❌ Info & Score-Erklärung ausblenden";
+    });
+  </script>
 </body>
 </html>
