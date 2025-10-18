@@ -1,28 +1,32 @@
-// ==========================
-// ⚙️ main.js
-// Initialisierung & Eventlistener
-// ==========================
-
-if (!window.DataLoader || !window.Genetics) {
-  console.error("❌ DataLoader oder Genetics nicht gefunden! Prüfe Script-Reihenfolge.");
-}
+// main.js – Initialisierung & Event-Handling
 
 let mares = [];
 let stallions = [];
 
+// ===============================
+// Initialisierung nach Laden der Seite
+// ===============================
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Starte Datenimport...");
 
+  // Sicherstellen, dass DataLoader und Genetics geladen sind
+  if (typeof DataLoader === "undefined" || typeof calculateScores === "undefined") {
+    console.error("❌ DataLoader oder Genetics nicht gefunden! Prüfe Script-Reihenfolge.");
+    return;
+  }
+
+  // Daten laden
   const data = await DataLoader.loadData();
   mares = data.mares;
   stallions = data.stallions;
 
+  // Dropdowns befüllen
   const mareSelect = document.getElementById("mareSelect");
   const ownerSelect = document.getElementById("ownerSelect");
   const sortSelect = document.getElementById("sortSelect");
   const allBtn = document.getElementById("showAll");
 
-  // 🔹 Dropdowns befüllen
+  // 🔹 Stuten-Dropdown
   [...new Set(mares.map(m => m.Name).filter(Boolean))].forEach(name => {
     const opt = document.createElement("option");
     opt.value = name;
@@ -30,6 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     mareSelect.appendChild(opt);
   });
 
+  // 🔹 Besitzer-Dropdown
   [...new Set(mares.map(m => m.Besitzer).filter(Boolean))].forEach(owner => {
     const opt = document.createElement("option");
     opt.value = owner;
@@ -37,14 +42,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     ownerSelect.appendChild(opt);
   });
 
-  // 🔹 Aktualisierung bei Änderungen
+  // ===============================
+  // Funktion: Ergebnisse aktualisieren
+  // ===============================
   function updateResults() {
-    const mareName = mareSelect.value || null;
-    const ownerName = ownerSelect.value || null;
+    const mareName = mareSelect.value;
+    const ownerName = ownerSelect.value;
     const sortOpt = sortSelect.value;
+
     renderResults(mares, stallions, mareName, ownerName, sortOpt);
   }
 
+  // ===============================
+  // Events
+  // ===============================
   mareSelect.addEventListener("change", updateResults);
   ownerSelect.addEventListener("change", updateResults);
   sortSelect.addEventListener("change", updateResults);
@@ -53,6 +64,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderResults(mares, stallions, null, null, sortSelect.value);
   });
 
-  // 🔹 Startanzeige
+  // ===============================
+  // Initialanzeige (alle Stuten)
+  // ===============================
   renderResults(mares, stallions, null, null, "range");
 });
