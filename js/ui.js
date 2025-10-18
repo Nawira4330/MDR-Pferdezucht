@@ -1,73 +1,58 @@
-// ui.js – Darstellung & Logik für Ergebnisanzeige
+// Anzeige der Ergebnisse
 const UI = {
   render(mares, stallions, selMare, selOwner, sortOpt) {
     const results = document.getElementById("results");
     results.innerHTML = "";
 
-    // 🔹 Filtere nach Auswahl
-    const filteredMares = mares.filter(
-      m =>
+    const filtered = mares
+      .filter(m =>
         (!selMare || m.Name === selMare) &&
         (!selOwner || m.Besitzer === selOwner)
-    );
+      )
+      .sort((a, b) => a.Name.localeCompare(b.Name)); // alphabetisch sortiert
 
-    if (!filteredMares.length) {
-      results.innerHTML = "<p style='text-align:center;color:#777;'>Keine passenden Stuten gefunden.</p>";
+    if (!filtered.length) {
+      results.innerHTML =
+        "<p style='text-align:center;color:#777;'>Keine Stuten gefunden.</p>";
       return;
     }
 
-    // 🔹 Jede Stute einzeln mit ALLEN Hengsten vergleichen
-    filteredMares.forEach(mare => {
-      const mareDiv = document.createElement("div");
-      mareDiv.className = "mare-card";
-
-      mareDiv.innerHTML = `
-        <h3>${mare.Name}</h3>
+    filtered.forEach(mare => {
+      const div = document.createElement("div");
+      div.className = "mare-card";
+      div.innerHTML = `<h3>${mare.Name}</h3>
         <p><b>Besitzer:</b> ${mare.Besitzer || "-"}<br>
-        <b>Farbgenetik:</b> ${mare.Farbgenetik || "-"}</p>
-      `;
+        <b>Farbgenetik:</b> ${mare.Farbgenetik || "-"}</p>`;
 
-      // 🔹 Für jeden Hengst Score berechnen
-      const stallionScores = stallions.map(stallion => {
-        const score = Genetics.calculate(mare, stallion);
-        return { stallion, score };
-      });
+      const scores = stallions.map(s => ({
+        stallion: s,
+        score: Genetics.calculate(mare, s)
+      }));
 
-      // 🔹 Sortierung: Best / Worst / Kleinste Range
-      stallionScores.sort((a, b) => {
-        if (sortOpt === "best") {
-          return b.score.best - a.score.best; // absteigend nach best
-        } else if (sortOpt === "worst") {
-          return b.score.worst - a.score.worst; // absteigend nach worst
-        } else {
-          // Kleinste Range (Differenz zwischen best & worst)
-          const rangeA = a.score.best - a.score.worst;
-          const rangeB = b.score.best - b.score.worst;
-          return rangeA - rangeB; // aufsteigend: kleinere Range besser
-        }
-      });
+      // Sortierung
+      if (sortOpt === "best") scores.sort((a, b) => b.score.best - a.score.best);
+      else if (sortOpt === "worst") scores.sort((a, b) => b.score.worst - a.score.worst);
+      else scores.sort((a, b) =>
+        (a.score.best - a.score.worst) - (b.score.best - b.score.worst)
+      );
 
-      // 🔹 Nur die Top 3 anzeigen
-      stallionScores.slice(0, 3).forEach((entry, i) => {
+      // Top 3 anzeigen
+      scores.slice(0, 3).forEach((entry, i) => {
         const medal = ["🥇", "🥈", "🥉"][i];
-        const stallion = entry.stallion;
-        const color = stallion.Farbgenetik || "-";
-        const best = entry.score.best.toFixed(1);
-        const worst = entry.score.worst.toFixed(1);
+        const best = entry.score.best.toFixed(2);
+        const worst = entry.score.worst.toFixed(2);
 
-        const sDiv = document.createElement("div");
-        sDiv.className = "stallion-entry";
-        sDiv.innerHTML = `
-          ${medal} <b>${stallion.Name || "(Unbekannt)"}</b>
-          <span class="tag">${color}</span>
-          <span class="score">Best: ${best} / Worst: ${worst}</span>
-        `;
-        mareDiv.appendChild(sDiv);
+        div.innerHTML += `
+          <div class="stallion-entry">
+            ${medal} <b>${entry.stallion.Name || "(Unbekannt)"}</b>
+            <span class="tag">${entry.stallion.Farbgenetik || "-"}</span>
+            <span class="score">Best: ${best} / Worst: ${worst} / 16</span>
+          </div>`;
       });
 
-      results.appendChild(mareDiv);
+      results.appendChild(div);
     });
-  },
+  }
 };
 
 window.UI = UI;
