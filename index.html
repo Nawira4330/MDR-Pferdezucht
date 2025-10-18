@@ -27,20 +27,25 @@
     </div>
 
     <div id="tab-info" class="tab-content active">
-      <h2>Info zur Berechnung der Hengste</h2>
-      <p>
-        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale analysiert. 
-        Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> möglichst genau erreicht.
-      </p>
-      <ul>
-        <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
-        <li>Schwächen werden möglichst ausgeglichen</li>
-        <li>Die Bewertung erfolgt pro Merkmal auf Basis von 8 Gen-Paaren</li>
-      </ul>
-      <p>
-        Es werden für jede Stute alle Hengste verglichen, um die bestmögliche genetische Kombination zu finden.
-        Eine Überkorrektur (z. B. HH + HH) wird positiv gewertet, da sie die gewünschte Dominanz stärkt.
-      </p>
+      <h2>Wie wird der passende Hengst berechnet?</h2>
+  <p>
+    Für jede Stute werden alle Hengste anhand ihrer Exterieur-Gene verglichen. 
+    Jedes Merkmal besteht aus acht Genpaaren – die ersten vier für den vorderen 
+    Körperbereich (<strong>Front</strong>), die letzten vier für den hinteren 
+    (<strong>Back</strong>).
+  </p>
+  <p>
+    Aus den Genen von Stute und Hengst wird nach mendelschen Regeln berechnet, 
+    welche Kombinationen das Fohlen erhalten könnte. Im Vorderbereich sind 
+    <strong>HH</strong> optimal, hinten <strong>hh</strong>. Dafür gibt es Punkte:
+    vorne HH = 2, Hh = 1, hh = 0; hinten HH = 0, Hh = 1, hh = 2.
+  </p>
+  <p>
+    So entstehen der <strong>Best Score</strong> (beste mögliche Vererbung) und der 
+    <strong>Worst Score</strong> (ungünstigste Vererbung). Die Top 3 Hengste sind 
+    jene, die die Stärken der Stute unterstützen und ihre Schwächen am besten 
+    ausgleichen.
+  </p>
     </div>
 
     <div id="tab-score" class="tab-content">
