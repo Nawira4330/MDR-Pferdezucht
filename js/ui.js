@@ -1,62 +1,73 @@
-// ===============================
-// UI – Dropdowns, Anzeige, Tabs
-// ===============================
-let currentMares = [];
+// ui.js – Darstellung, Filterung & Sortierung
 
-function fillDropdowns() {
-  const mareSel = document.getElementById("mareSelect");
-  mares.forEach((m) => {
-    const o = document.createElement("option");
-    o.textContent = m.Name;
-    o.value = m.Name;
-    mareSel.appendChild(o);
-  });
+function renderResults(mares, stallions, selectedMare, selectedOwner, sortOption) {
+  const resultsContainer = document.getElementById("results");
+  resultsContainer.innerHTML = "";
 
-  const ownerSel = document.getElementById("ownerSelect");
-  [...new Set(mares.map((m) => m.Besitzer))].forEach((oName) => {
-    const o = document.createElement("option");
-    o.textContent = oName;
-    o.value = oName;
-    ownerSel.appendChild(o);
-  });
-}
+  const filteredMares = mares.filter(
+    m =>
+      (!selectedMare || m.Name === selectedMare) &&
+      (!selectedOwner || m.Besitzer === selectedOwner)
+  );
 
-function showResults(filteredMares) {
-  const sort = document.getElementById("sortSelect").value;
-  const res = document.getElementById("results");
-  res.innerHTML = "";
+  if (filteredMares.length === 0) {
+    resultsContainer.innerHTML = "<p style='text-align:center;color:#777;'>Keine passenden Stuten gefunden.</p>";
+    return;
+  }
 
-  filteredMares.forEach((m) => {
-    const card = document.createElement("div");
-    card.className = "result-card";
-    card.innerHTML = `
-      <h2>${m.Name}</h2>
-      <div class="owner">Besitzer: ${m.Besitzer}</div>
-      <div><span class="badge">${m.Farbgenetik || "-"}</span></div>
+  filteredMares.forEach(mare => {
+    const mareDiv = document.createElement("div");
+    mareDiv.classList.add("mare-card");
+
+    const mareHeader = `
+      <h3>${mare.Name}</h3>
+      <p><b>Besitzer:</b> ${mare.Besitzer || "-"}</p>
+      <p>${mare.Farbgenetik ? mare.Farbgenetik : ""}</p>
     `;
+    mareDiv.innerHTML = mareHeader;
 
-    const scores = stallions.map((s) => {
-      const sc = calculateScores(m, s);
-      return { s, ...sc, diff: sc.best - sc.worst };
+    // 🔹 Berechne Score für jeden Hengst
+    const stallionScores = stallions
+      .map(stallion => ({
+        stallion,
+        score: calculateScores(mare, stallion),
+      }))
+      .filter(s => s.score.best > 0);
+
+    // 🔹 Sortierung
+    stallionScores.sort((a, b) => {
+      if (sortOption === "best") return b.score.best - a.score.best;
+      if (sortOption === "worst") return b.score.worst - a.score.worst;
+      const rangeA = a.score.best - a.score.worst;
+      const rangeB = b.score.best - b.score.worst;
+      return rangeA - rangeB;
     });
 
-    let sorted = scores;
-    if (sort === "best") sorted = scores.sort((a, b) => b.best - a.best);
-    else if (sort === "worst") sorted = scores.sort((a, b) => b.worst - a.worst);
-    else sorted = scores.sort((a, b) => a.diff - b.diff);
+    // 🔹 Top 3 anzeigen
+    const top3 = stallionScores.slice(0, 3);
+    top3.forEach((entry, i) => {
+      const medal = ["🥇", "🥈", "🥉"][i];
+      const stallionName =
+        entry.stallion.Name && entry.stallion.Name.trim() !== ""
+          ? entry.stallion.Name
+          : "(Unbekannt)";
+      const stallionColor =
+        entry.stallion.Farbgenetik ||
+        entry.stallion["Farbe"] ||
+        "-";
 
-    sorted.slice(0, 3).forEach((r, i) => {
-      const rank = ["🥇", "🥈", "🥉"][i];
-      const stDiv = document.createElement("div");
-      stDiv.className = "stallion";
-      stDiv.innerHTML = `
-        <div>${rank} ${r.s.Name}</div>
-        <div><span class="badge">${r.s.Farbgenetik || "-"}</span></div>
-        <div class="score">Best: ${r.best} / Worst: ${r.worst}</div>
+      const sDiv = document.createElement("div");
+      sDiv.classList.add("stallion-entry");
+      sDiv.innerHTML = `
+        <p>${medal} <b>${stallionName}</b>
+        <span class="tag">${stallionColor}</span>
+        <span class="score">Best: ${entry.score.best} / Worst: ${entry.score.worst}</span></p>
       `;
-      card.appendChild(stDiv);
+      mareDiv.appendChild(sDiv);
     });
 
-    res.appendChild(card);
+    resultsContainer.appendChild(mareDiv);
   });
 }
+
+window.renderResults = renderResults;
