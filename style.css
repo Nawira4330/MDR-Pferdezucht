@@ -1,74 +1,66 @@
 /* ============================
-   Grundlayout & Farbvariablen
+   Basis & Layout
 ============================ */
 :root {
   --green: #6b9d00;
-  --darkgreen: #4d7300;
-  --lightblue: #c8e8ff;
+  --darkgreen: #4c7300;
+  --lightblue: #d8f0ff;
   --text: #222;
-  --gray: #666;
+  --bg: #f9fafb;
   --white: #fff;
-  --bg: #f7fbf8;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 body {
+  margin: 0;
   font-family: "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
-  margin: 0;
   line-height: 1.6;
 }
 
 /* ============================
-   HEADER mit Farbverlauf
+   HEADER mit Verlauf & Warnung
 ============================ */
 header {
   background: linear-gradient(90deg, var(--green), var(--lightblue));
   color: white;
   text-align: center;
-  padding: 1.5rem 1rem 1rem 1rem;
+  padding: 1.5rem 1rem;
   box-shadow: var(--shadow);
 }
 
 header h1 {
-  font-size: 1.9rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.5px;
+  margin: 0;
 }
 
-/* ============================
-   Warnhinweis (dauerhaft sichtbar)
-============================ */
 .warning {
   background: rgba(255, 255, 255, 0.2);
-  border: 1.5px solid white;
-  border-radius: 8px;
   display: inline-block;
-  padding: 0.6rem 1rem;
-  color: white;
+  margin-top: 0.7rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.95rem;
-  margin-top: 0.3rem;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================
-   INFOBOX mit Tabs (standardmäßig eingeklappt)
+   INFOBOX mit Tabs
 ============================ */
 .info-toggle {
   display: block;
-  width: 100%;
+  margin: 1.2rem auto;
   background: var(--green);
   color: white;
-  font-size: 1rem;
-  font-weight: 600;
   border: none;
-  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.7rem 1.2rem;
   cursor: pointer;
-  text-align: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .info-toggle:hover {
@@ -77,35 +69,38 @@ header h1 {
 
 .info-box {
   max-width: 950px;
-  margin: 1.2rem auto;
+  margin: 0 auto;
   background: var(--white);
   border-radius: 12px;
   box-shadow: var(--shadow);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: max-height 0.3s ease;
 }
 
-/* Tabs */
+.info-box.collapsed {
+  display: none;
+}
+
 .tab-buttons {
   display: flex;
   background: var(--lightblue);
-  border-bottom: 2px solid #e3f5ff;
+  border-bottom: 1px solid #d0e6f0;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 0.8rem;
-  background: none;
+  background: transparent;
   border: none;
-  cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
   color: var(--darkgreen);
-  transition: all 0.2s ease;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .tab-btn:hover {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .tab-btn.active {
@@ -123,11 +118,6 @@ header h1 {
   display: block;
 }
 
-.info-box.collapsed .tab-content {
-  display: none !important;
-}
-
-/* Tabellen */
 .score-table {
   width: 100%;
   border-collapse: collapse;
@@ -137,9 +127,8 @@ header h1 {
 
 .score-table th,
 .score-table td {
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   padding: 0.5rem 0.7rem;
-  text-align: left;
 }
 
 .score-table th {
@@ -151,16 +140,17 @@ header h1 {
    FILTERBEREICH
 ============================ */
 .filters {
+  max-width: 950px;
+  margin: 1rem auto;
+  background: var(--white);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  box-shadow: var(--shadow);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
-  background: white;
-  border-radius: 10px;
-  max-width: 950px;
-  margin: 1rem auto;
-  padding: 1rem 1.5rem;
-  box-shadow: var(--shadow);
+  align-items: center;
 }
 
 .filters label {
@@ -168,29 +158,30 @@ header h1 {
   color: var(--darkgreen);
 }
 
-.filters select,
-.filters button {
+.filters select {
   padding: 0.5rem 0.7rem;
-  border-radius: 6px;
   border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
   font-size: 0.95rem;
-  background: #fdfdfd;
 }
 
 .filters select:focus {
   outline: 2px solid var(--green);
 }
 
-.btn-primary {
+.filters button {
   background: var(--green);
   color: white;
   font-weight: 600;
   border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.btn-primary:hover {
+.filters button:hover {
   background: var(--darkgreen);
 }
 
@@ -199,16 +190,16 @@ header h1 {
 ============================ */
 #results {
   max-width: 950px;
-  margin: 1.5rem auto;
+  margin: 2rem auto;
 }
 
 .mare-card {
-  background: white;
+  background: var(--white);
   border-radius: 12px;
-  padding: 1rem 1.2rem;
-  margin-bottom: 1.5rem;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.3rem;
   box-shadow: var(--shadow);
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
 }
 
 .mare-card:hover {
@@ -225,7 +216,6 @@ header h1 {
   color: var(--gray);
 }
 
-/* Hengst-Einträge */
 .stallion-entry {
   background: var(--lightblue);
   border-radius: 8px;
@@ -234,23 +224,19 @@ header h1 {
   font-size: 0.95rem;
 }
 
-.stallion-entry strong {
-  color: var(--darkgreen);
-}
-
 .tag {
   background: var(--green);
   color: white;
   border-radius: 6px;
   padding: 0.1rem 0.4rem;
   font-size: 0.85rem;
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
 }
 
 .score {
   float: right;
+  font-weight: 600;
   color: var(--darkgreen);
-  font-weight: bold;
 }
 
 /* ============================
@@ -259,11 +245,11 @@ header h1 {
 footer {
   text-align: center;
   padding: 1rem;
-  font-size: 0.9rem;
   color: #555;
-  background: #f1f1f1;
-  border-top: 2px solid var(--lightblue);
-  margin-top: 2rem;
+  font-size: 0.9rem;
+  background: #eef4eb;
+  border-top: 3px solid var(--green);
+  margin-top: 3rem;
 }
 
 /* ============================
@@ -271,12 +257,12 @@ footer {
 ============================ */
 @media (max-width: 768px) {
   header h1 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
   }
 
   .filters {
     flex-direction: column;
-    align-items: stretch;
+    gap: 0.7rem;
   }
 
   .filters label {
