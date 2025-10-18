@@ -39,6 +39,17 @@ const UI = {
         };
       });
 
+      // Debug-Ausgabe zur Kontrolle der Berechnungen
+console.group(`🐴 ${mare.Name}`);
+stallions.forEach(s => {
+  const score = Genetics.calculate(mare, s);
+  console.log(
+    `${s.Name} → Best: ${score.best.toFixed(2)}, Worst: ${score.worst.toFixed(2)}`
+  );
+});
+console.groupEnd();
+
+
       // 🔹 Sortierung nach Auswahl
       if (sortOpt === "best") {
         stallionScores.sort((a, b) => b.best - a.best);
