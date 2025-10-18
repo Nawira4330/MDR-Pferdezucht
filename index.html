@@ -1,45 +1,39 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- ============================
-       HEADER
-  ============================= -->
   <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
     <div class="warning">
-      ⚠️ Hinweis: Inzucht und die Vererbung des Overo-Gens werden in dieser Analyse <b>nicht berücksichtigt</b>.
+      ⚠️ <b>Wichtiger Hinweis:</b> Inzucht und die doppelte Vererbung des Overo-Gens
+      werden in dieser Analyse <b>nicht</b> berücksichtigt. 
+      Die Ergebnisse dienen ausschließlich der theoretischen Exterieur-Abschätzung.
     </div>
   </header>
 
-  <!-- ============================
-       INFOBOX (standardmäßig eingeklappt)
-  ============================= -->
-  <button class="info-toggle" onclick="document.querySelector('.info-box').classList.toggle('collapsed')">
-    ℹ️ Informationen anzeigen / verbergen
-  </button>
+  <!-- INFOBOX (standardmäßig geschlossen) -->
+  <button id="infoToggle" class="info-toggle">ℹ️ Info & Score-Erklärung anzeigen</button>
 
-  <section class="info-box collapsed">
+  <section id="infoBox" class="info-box collapsed">
     <div class="tab-buttons">
-      <button class="tab-btn active" onclick="openTab(event, 'infoTab')">Info zur Berechnung der Hengste</button>
-      <button class="tab-btn" onclick="openTab(event, 'scoreTab')">Score-Berechnung & Interpretation</button>
+      <button class="tab-btn active" onclick="openTab(event, 'tab-info')">Info zur Berechnung der Hengste</button>
+      <button class="tab-btn" onclick="openTab(event, 'tab-score')">Score-Berechnung & Interpretation</button>
     </div>
 
-    <div id="infoTab" class="tab-content active">
+    <div id="tab-info" class="tab-content active">
       <h2>Info zur Berechnung der Hengste</h2>
       <p>
-        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale analysiert.
-        Ziel ist, dass das Fohlen den Idealwert
-        <strong>HH HH HH HH | hh hh hh hh</strong> möglichst genau erreicht.
+        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale analysiert. 
+        Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> möglichst genau erreicht.
       </p>
       <ul>
         <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
-        <li>Schwächen werden gezielt ausgeglichen</li>
+        <li>Schwächen werden möglichst ausgeglichen</li>
         <li>Die Bewertung erfolgt pro Merkmal auf Basis von 8 Gen-Paaren</li>
       </ul>
       <p>
@@ -48,17 +42,15 @@
       </p>
     </div>
 
-    <div id="scoreTab" class="tab-content">
+    <div id="tab-score" class="tab-content">
       <h2>Score-Berechnung & Interpretation</h2>
       <p>
-        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, Widerrist,
-        Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, Fesseln, Hufe)
-        werden 8 Gen-Paare analysiert:
+        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, 
+        Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, 
+        Fesseln, Hufe) werden 8 Gen-Paare analysiert:
       </p>
-      <p>
-        <strong>Vorne (4 Paare):</strong> Ziel ist HH<br>
-        <strong>Hinten (4 Paare):</strong> Ziel ist hh
-      </p>
+      <p><b>Vorne (4 Paare):</b> Ziel ist HH<br>
+         <b>Hinten (4 Paare):</b> Ziel ist hh</p>
 
       <table class="score-table">
         <thead><tr><th>Score</th><th>Bewertung</th></tr></thead>
@@ -70,69 +62,40 @@
           <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
         </tbody>
       </table>
-
       <p>
-        Der <strong>Score</strong> ergibt sich aus der Summe der Punktwerte aller Merkmale.
-        Der <strong>Best Score</strong> repräsentiert die ideale genetische Kombination,
-        der <strong>Worst Score</strong> die ungünstigste Variante.
+        Der <b>Best Score</b> repräsentiert die ideale genetische Kombination, 
+        der <b>Worst Score</b> die ungünstigste Variante.
       </p>
     </div>
   </section>
 
-  <!-- ============================
-       FILTERBEREICH
-  ============================= -->
+  <!-- FILTERBEREICH -->
   <section class="filters">
-    <label for="mareSelect">Stute:</label>
-    <select id="mareSelect">
-      <option value="">-- Wähle eine Stute --</option>
-    </select>
+    <label for="mareSelect">Stute auswählen:</label>
+    <select id="mareSelect"><option value="">– Stute wählen –</option></select>
 
-    <label for="ownerSelect">Besitzer:</label>
-    <select id="ownerSelect">
-      <option value="">-- Wähle Besitzer --</option>
-    </select>
+    <label for="ownerSelect">Besitzer auswählen:</label>
+    <select id="ownerSelect"><option value="">– Besitzer wählen –</option></select>
 
     <label for="sortSelect">Sortierung:</label>
     <select id="sortSelect">
-      <option value="best">Bester Score</option>
-      <option value="worst">Schlechtester Score</option>
-      <option value="range">Kleinste Differenz (Range)</option>
+      <option value="best">Bester Score (Best)</option>
+      <option value="worst">Bester Score (Worst)</option>
+      <option value="range">Kleinste Range (Differenz)</option>
     </select>
 
     <button id="showAll" class="btn-primary">Alle anzeigen</button>
   </section>
 
-  <!-- ============================
-       ERGEBNISSE
-  ============================= -->
+  <!-- ERGEBNISSE -->
   <section id="results"></section>
 
-  <!-- ============================
-       FOOTER
-  ============================= -->
   <footer>
-    © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
+    © 2025 MDR-Zucht | Entwickelt mit 💗 für die Zuchtplanung
   </footer>
 
-  <!-- ============================
-       JAVASCRIPT
-  ============================= -->
-  <script>
-    // Tabs steuern
-    function openTab(evt, tabId) {
-      const contents = document.querySelectorAll(".tab-content");
-      const buttons = document.querySelectorAll(".tab-btn");
-
-      contents.forEach(c => c.classList.remove("active"));
-      buttons.forEach(b => b.classList.remove("active"));
-
-      document.getElementById(tabId).classList.add("active");
-      evt.currentTarget.classList.add("active");
-    }
-  </script>
-
-  <!-- Reihenfolge beachten -->
+  <!-- Skripte -->
+  <script src="js/tabs.js"></script>
   <script src="js/dataLoader.js"></script>
   <script src="js/genetics.js"></script>
   <script src="js/ui.js"></script>
