@@ -1,110 +1,108 @@
 // ==============================================
-// GENETIK-LOGIK – Balance-Algorithmus (Erhaltung + Ausgleich)
+// GENETIK-BERECHNUNG – Exterieur-Matching-System
+// ==============================================
+// Diese Version:
+// ✅ Unterstützt robustes Spalten-Matching (auch bei Leerzeichen / Schreibfehlern)
+// ✅ Berechnet Scores für jede Stute-Hengst-Kombination individuell
+// ✅ Balanciert Stärken (erhalten) und Schwächen (ausgleichen)
+// ✅ Zeigt per DEBUG-Ausgabe, ob Daten richtig eingelesen wurden
 // ==============================================
 
-// VORDERER BEREICH (Ziel HH) – Kraft, Typ, Ausdruck
-// → Stärken (HH) schützen, Schwächen (hh) ausgleichen
+// FRONT (HH-Ziel) – Kraft, Typ, Stabilität
 const SCORE_FRONT = {
-  "HH-HH": 4, // perfekt erhalten
-  "HH-Hh": 3, // leicht abgeschwächt, aber stabil
-  "HH-hh": 1, // schwächt zu stark ab
-  "Hh-HH": 3, // unterstützt Stärke
-  "Hh-Hh": 2, // neutral
-  "Hh-hh": 1, // verliert Stabilität
-  "hh-HH": 4, // idealer Ausgleich
-  "hh-Hh": 3, // teils ausgeglichen
-  "hh-hh": 0, // schwach + schwach = keine Verbesserung
+  "HH-HH": 4, "HH-Hh": 3, "HH-hh": 1,
+  "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
+  "hh-HH": 4, "hh-Hh": 3, "hh-hh": 0
 };
 
-// HINTERER BEREICH (Ziel hh) – Elastizität, Losgelassenheit
-// → Weiche Strukturen erhalten, zu harte ausgleichen
+// BACK (hh-Ziel) – Elastizität, Losgelassenheit
 const SCORE_BACK = {
-  "HH-HH": 0, // zu hart
-  "HH-Hh": 2, // etwas besser
-  "HH-hh": 4, // idealer Ausgleich
-  "Hh-HH": 1, // zu fest
-  "Hh-Hh": 3, // gute Balance
-  "Hh-hh": 4, // ideal weich
-  "hh-HH": 2, // noch stabil, aber härter
-  "hh-Hh": 3, // perfekt erhalten
-  "hh-hh": 4, // optimale Weichheit erhalten
+  "HH-HH": 0, "HH-Hh": 2, "HH-hh": 4,
+  "Hh-HH": 1, "Hh-Hh": 3, "Hh-hh": 4,
+  "hh-HH": 2, "hh-Hh": 3, "hh-hh": 4
 };
 
-// Kombiniert die Allele (z. B. hh + HH = [hH, hH, hH, hH])
+// Hilfsfunktion: Alle möglichen Fohlenkombinationen (z. B. hh × HH → hH, hH, hH, hH)
 function offspringCombos(sPair, hPair) {
   const combos = [];
+  if (!sPair || !hPair) return combos;
   for (const s of sPair) for (const h of hPair) combos.push(s + h);
   return combos;
 }
 
-// Berechnet Score pro Gen-Paar
+// Berechnet Punkte eines einzelnen Genpaars
 function getPairScore(isFront, sPair, hPair) {
-  const combos = offspringCombos(sPair, hPair);
   const table = isFront ? SCORE_FRONT : SCORE_BACK;
-  const vals = combos.map((c) => table[c] ?? 0);
-  return { best: Math.max(...vals), worst: Math.min(...vals) };
+  const combos = offspringCombos(sPair, hPair);
+  const vals = combos.map(c => table[c] ?? 0);
+  return { best: Math.max(...vals, 0), worst: Math.min(...vals, 0) };
 }
 
 // ==============================================
-// Hauptfunktion zur Berechnung des Gesamtscores
+// 🧠 Robustes Spalten-Matching
+// ==============================================
+function getField(obj, key) {
+  const target = key.toLowerCase().replace(/\s/g, "");
+  const found = Object.keys(obj).find(
+    k => k.toLowerCase().replace(/\s/g, "") === target
+  );
+  return found ? obj[found] : "";
+}
+
+// ==============================================
+// 🔬 Hauptfunktion – Scoreberechnung pro Kombination
 // ==============================================
 function calculateScores(mare, stallion) {
   const TRAITS = [
-    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
-    "Brust","Rückenlinie","Rückenlänge","Kruppe",
-    "Beinwinkelung","Beinstellung","Fesseln","Hufe"
+    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter",
+    "Brust", "Rückenlinie", "Rückenlänge", "Kruppe",
+    "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
   ];
 
   let totalBest = 0, totalWorst = 0, foundAny = false;
 
+  // --- DEBUG-Start ---
+  console.groupCollapsed(`🐎 DEBUG: ${mare.Name} × ${stallion.Name}`);
+  // --- DEBUG-Ende ---
+
   for (const trait of TRAITS) {
-    // Feld robust holen (auch wenn Leerzeichen oder falsche Header)
-    const mareVal = Object.entries(mare).find(([k]) =>
-      k.toLowerCase().replace(/\s/g,"") === trait.toLowerCase())?.[1] || "";
-    const stallVal = Object.entries(stallion).find(([k]) =>
-      k.toLowerCase().replace(/\s/g,"") === trait.toLowerCase())?.[1] || "";
+    const mareVal = (getField(mare, trait) || "").replace(/\s+/g, "");
+    const stallVal = (getField(stallion, trait) || "").replace(/\s+/g, "");
 
     if (!mareVal || !stallVal) continue;
-
-    // alle Leerzeichen & Steuerzeichen entfernen
-    const m = mareVal.replace(/\s+/g,"").trim();
-    const h = stallVal.replace(/\s+/g,"").trim();
-    if (!m.includes("|") || !h.includes("|")) continue;
+    if (!mareVal.includes("|") || !stallVal.includes("|")) continue;
     foundAny = true;
 
-    // Front/Back trennen
-    const [mFront, mBack] = m.split("|");
-    const [hFront, hBack] = h.split("|");
+    const [mFront, mBack] = mareVal.split("|");
+    const [hFront, hBack] = stallVal.split("|");
 
-    // Falls zu kurz → auffüllen
-    const toPairs = (s) => (s.match(/.{1,2}/g) || []).slice(0,8);
-    const mFrontPairs = toPairs(mFront.padEnd(8,"h"));
-    const hFrontPairs = toPairs(hFront.padEnd(8,"h"));
-    const mBackPairs = toPairs(mBack.padEnd(8,"h"));
-    const hBackPairs = toPairs(hBack.padEnd(8,"h"));
+    const toPairs = s => (s.match(/.{1,2}/g) || []).slice(0, 8);
+    const mFrontPairs = toPairs(mFront);
+    const mBackPairs = toPairs(mBack);
+    const hFrontPairs = toPairs(hFront);
+    const hBackPairs = toPairs(hBack);
 
     let traitBest = 0, traitWorst = 0;
 
-    // FRONT (HH-Ziel)
-    for (let i=0;i<4;i++){
-      const {best,worst} = getPairScore(true,mFrontPairs[i],hFrontPairs[i]);
+    // Vordere 4 (Ziel HH)
+    for (let i = 0; i < 4; i++) {
+      const { best, worst } = getPairScore(true, mFrontPairs[i], hFrontPairs[i]);
       traitBest += best; traitWorst += worst;
     }
-    // BACK (hh-Ziel)
-    for (let i=0;i<4;i++){
-      const {best,worst} = getPairScore(false,mBackPairs[i],hBackPairs[i]);
+
+    // Hintere 4 (Ziel hh)
+    for (let i = 0; i < 4; i++) {
+      const { best, worst } = getPairScore(false, mBackPairs[i], hBackPairs[i]);
       traitBest += best; traitWorst += worst;
     }
 
     totalBest += traitBest;
     totalWorst += traitWorst;
+
+    console.log(`➡️ ${trait}: best ${traitBest}, worst ${traitWorst}`);
   }
 
-  return foundAny ? {best:totalBest, worst:totalWorst} : {best:0, worst:0};
+  console.groupEnd();
+
+  return foundAny ? { best: totalBest, worst: totalWorst } : { best: 0, worst: 0 };
 }
-
-console.log("DEBUG", mare.Name, stallion.Name, {
-  kopfMare: mare.Kopf,
-  kopfHengst: stallion.Kopf
-});
-
