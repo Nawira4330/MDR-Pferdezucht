@@ -46,7 +46,7 @@ const UI = {
           <div class="stallion-entry">
             ${medal} <b>${entry.stallion.Name || "(Unbekannt)"}</b>
             <span class="tag">${entry.stallion.Farbgenetik || "-"}</span>
-            <span class="score">Best: ${best} / Worst: ${worst} / 16</span>
+            <span class="score">Best: ${best} Worst: ${worst} </span>
           </div>`;
       });
 
