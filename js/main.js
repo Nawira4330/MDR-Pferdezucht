@@ -3,6 +3,10 @@
 // Initialisierung & Eventlistener
 // ==========================
 
+if (!window.DataLoader || !window.Genetics) {
+  console.error("❌ DataLoader oder Genetics nicht gefunden! Prüfe Script-Reihenfolge.");
+}
+
 let mares = [];
 let stallions = [];
 
