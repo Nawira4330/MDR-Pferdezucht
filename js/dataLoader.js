@@ -30,14 +30,21 @@ function cleanCSVData(data) {
   return data.map(row => {
     const cleaned = {};
     for (const key in row) {
-      const newKey = key.replace(/\uFEFF/g, "").trim();
-      let value = String(row[key] || "").trim();
-      value = value.replace(/^"|"$/g, "").replace(/\uFEFF/g, "").trim();
+      const newKey = key
+        .replace(/[^\P{C}\n\r\t]+/gu, "") // entfernt alle unsichtbaren Steuerzeichen
+        .replace(/\uFEFF/g, "")
+        .trim();
+      let value = String(row[key] || "")
+        .replace(/[^\P{C}\n\r\t]+/gu, "")
+        .replace(/^"|"$/g, "")
+        .replace(/\uFEFF/g, "")
+        .trim();
       cleaned[newKey] = value;
     }
     return cleaned;
   });
 }
+
 
 // 🔹 Lädt Stuten & Hengste (ignoriert unvollständige Hengste)
 async function loadData() {
