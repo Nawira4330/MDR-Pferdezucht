@@ -15,7 +15,7 @@ const Genetics = {
       const stallionVal = getField(stallion, trait);
       if (!mareVal || !stallionVal) continue;
 
-      // Genpaare auf 8 begrenzen
+      // Auf 8 Genpaare kürzen
       const mPairs = (mareVal.match(/.{1,2}/g) || []).slice(0, 8);
       const sPairs = (stallionVal.match(/.{1,2}/g) || []).slice(0, 8);
       if (mPairs.length < 8 || sPairs.length < 8) continue;
@@ -27,9 +27,9 @@ const Genetics = {
         const m = normalizeGene(mPairs[i]);
         const s = normalizeGene(sPairs[i]);
 
+        // Bewertung pro Genpaar
         const bestFront = FRONT_SCORE[m + "-" + s] ?? 0;
         const bestBack  = BACK_SCORE[m + "-" + s] ?? 0;
-
         const worstFront = FRONT_SCORE[s + "-" + m] ?? 0;
         const worstBack  = BACK_SCORE[s + "-" + m] ?? 0;
 
@@ -38,20 +38,17 @@ const Genetics = {
         worstSum += i < 4 ? worstFront : worstBack;
       }
 
-      // Durchschnitt pro Merkmal (0–2)
-      const avgBest = bestSum / 8;
-      const avgWorst = worstSum / 8;
-
-      totalBest += avgBest;
-      totalWorst += avgWorst;
+      // Summe über alle Genpaare eines Merkmals (0–16)
+      totalBest += bestSum;
+      totalWorst += worstSum;
       countedTraits++;
     }
 
     if (countedTraits === 0) return { best: 0, worst: 0 };
 
-    // Gesamtmittelwert (0–16)
-    const finalBest = (totalBest / countedTraits) * 8;
-    const finalWorst = (totalWorst / countedTraits) * 8;
+    // 👉 Durchschnitt über alle 14 Merkmale → Skala 0–16
+    const finalBest = totalBest / countedTraits;
+    const finalWorst = totalWorst / countedTraits;
 
     return {
       best: parseFloat(finalBest.toFixed(2)),
