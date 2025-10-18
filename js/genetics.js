@@ -1,112 +1,90 @@
-// genetics.js – Berechnet individuelle Scores für jede Stute-Hengst-Kombination
+// genetics.js – Vererbungslogik für Stute × Hengst
 
 const Genetics = {
-  // 🔹 Holt das passende Feld, auch wenn Schreibweise abweicht
-  getField(obj, key) {
-    const target = key.toLowerCase().replace(/\s/g, "");
-    const found = Object.keys(obj).find(
-      k => k.toLowerCase().replace(/\s/g, "") === target
-    );
-    return found ? obj[found] : "";
-  },
+  // 🔹 Idealtypische Bewertung je Position
+  FRONT: { HH: 2, Hh: 1, hh: 0 },
+  BACK: { hh: 2, Hh: 1, HH: 0 },
 
-  // 🔹 Vereinfacht ein Genpaar auf HH, Hh oder hh
-  normalizeGene(pair) {
-    if (!pair) return "hh";
-    const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
-    const hCount = (clean.match(/H/g) || []).length;
-    if (hCount >= 2) return "HH";
-    if (hCount === 1) return "Hh";
-    return "hh";
-  },
-
-  // 🔹 Bewertet vordere Genpaare (Ziel = HH)
-  frontScore(gene) {
-    const map = { "HH": 2, "Hh": 1, "hh": 0 };
-    return map[gene] ?? 0;
-  },
-
-  // 🔹 Bewertet hintere Genpaare (Ziel = hh)
-  backScore(gene) {
-    const map = { "HH": 0, "Hh": 1, "hh": 2 };
-    return map[gene] ?? 0;
-  },
-
-  // 🔹 Hauptberechnung für eine Stute–Hengst-Kombination
+  // 🔹 Berechne Best und Worst Score
   calculate(mare, stallion) {
-    const TRAITS = [
-      "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter",
-      "Brust", "Rückenlinie", "Rückenlänge", "Kruppe",
-      "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
+    const traits = [
+      "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
+      "Schulter", "Brust", "Rückenlinie", "Rückenlänge",
+      "Kruppe", "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
     ];
 
     let totalBest = 0;
     let totalWorst = 0;
-    let validTraits = 0;
+    const totalTraits = traits.length;
 
-    TRAITS.forEach(trait => {
-      const rawM = this.getField(mare, trait);
-      const rawH = this.getField(stallion, trait);
-      if (!rawM || !rawH) return;
+    traits.forEach(trait => {
+      const mareVal = mare[trait] || "";
+      const stallionVal = stallion[trait] || "";
 
-      // 🔸 Leerzeichen & Sonderzeichen entfernen
-      const mClean = rawM.replace(/\s+/g, "").replace(/\|/g, "");
-      const hClean = rawH.replace(/\s+/g, "").replace(/\|/g, "");
+      // Beide Genstränge trennen (vorne | hinten)
+      const [mareFront, mareBack] = mareVal.split("|").map(s => s?.trim() || "");
+      const [stallionFront, stallionBack] = stallionVal.split("|").map(s => s?.trim() || "");
 
-      const mPairs = (mClean.match(/.{1,2}/g) || []).slice(0, 8).map(this.normalizeGene);
-      const hPairs = (hClean.match(/.{1,2}/g) || []).slice(0, 8).map(this.normalizeGene);
-      if (mPairs.length < 8 || hPairs.length < 8) return;
+      // Genlisten erzeugen
+      const mareFrontGenes = mareFront.split(" ").filter(Boolean);
+      const mareBackGenes = mareBack.split(" ").filter(Boolean);
+      const stallionFrontGenes = stallionFront.split(" ").filter(Boolean);
+      const stallionBackGenes = stallionBack.split(" ").filter(Boolean);
 
-      let bestTraitScore = 0;
-      let worstTraitScore = 0;
+      let bestTrait = 0;
+      let worstTrait = 0;
 
-      // 🔹 Vordere 4 Paare → Ziel HH
-      for (let i = 0; i < 4; i++) {
-        const possible = this.combineGenes(mPairs[i], hPairs[i]);
-        const best = Math.max(...possible.map(g => this.frontScore(g)));
-        const worst = Math.min(...possible.map(g => this.frontScore(g)));
-        bestTraitScore += best;
-        worstTraitScore += worst;
+      // 8 Positionen (Gene-Paare)
+      for (let i = 0; i < 8; i++) {
+        const mFront = mareFrontGenes[i] || "hh";
+        const sFront = stallionFrontGenes[i] || "hh";
+        const mBack = mareBackGenes[i] || "hh";
+        const sBack = stallionBackGenes[i] || "hh";
+
+        // 🔹 Alle möglichen Kind-Kombinationen generieren (dominant)
+        const combosFront = Genetics.cross(mFront, sFront);
+        const combosBack = Genetics.cross(mBack, sBack);
+
+        // 🔹 Bestes und schlechtestes Ergebnis ermitteln
+        const bestFront = Math.max(...combosFront.map(g => Genetics.FRONT[g] ?? 0));
+        const worstFront = Math.min(...combosFront.map(g => Genetics.FRONT[g] ?? 0));
+        const bestBack = Math.max(...combosBack.map(g => Genetics.BACK[g] ?? 0));
+        const worstBack = Math.min(...combosBack.map(g => Genetics.BACK[g] ?? 0));
+
+        bestTrait += bestFront + bestBack;
+        worstTrait += worstFront + worstBack;
       }
 
-      // 🔹 Hintere 4 Paare → Ziel hh
-      for (let i = 4; i < 8; i++) {
-        const possible = this.combineGenes(mPairs[i], hPairs[i]);
-        const best = Math.max(...possible.map(g => this.backScore(g)));
-        const worst = Math.min(...possible.map(g => this.backScore(g)));
-        bestTraitScore += best;
-        worstTraitScore += worst;
-      }
-
-      totalBest += bestTraitScore;
-      totalWorst += worstTraitScore;
-      validTraits++;
+      // 🔹 Durchschnitt dieses Merkmals (alle 8 Genpaare gleich gewichtet)
+      totalBest += bestTrait / 8;
+      totalWorst += worstTrait / 8;
     });
 
-    // 🔹 Durchschnitt pro Merkmal (max. 16)
-    const avgBest = validTraits > 0 ? totalBest / validTraits : 0;
-    const avgWorst = validTraits > 0 ? totalWorst / validTraits : 0;
+    // 🔹 Endscore mitteln (alle Merkmale gleich gewichtet)
+    const best = (totalBest / totalTraits).toFixed(2);
+    const worst = (totalWorst / totalTraits).toFixed(2);
 
-    // 🔹 Ergebnis auf 2 Nachkommastellen runden
-    return {
-      best: Math.round(avgBest * 100) / 100,
-      worst: Math.round(avgWorst * 100) / 100
-    };
+    return { best: parseFloat(best), worst: parseFloat(worst) };
   },
 
-  // 🔹 Kombiniert die Gene der Eltern nach Mendel
-  combineGenes(mGene, hGene) {
-    const mAlleles = mGene.split("");
-    const hAlleles = hGene.split("");
-    const combinations = [];
+  // 🔹 Mendel’sche Kreuzung
+  cross(parent1, parent2) {
+    const alleles1 = parent1.split("");
+    const alleles2 = parent2.split("");
+    const combos = [];
 
-    mAlleles.forEach(m => {
-      hAlleles.forEach(h => {
-        combinations.push(this.normalizeGene(m + h));
-      });
-    });
+    for (let a of alleles1) {
+      for (let b of alleles2) {
+        combos.push(a + b);
+      }
+    }
 
-    return combinations;
+    // Normalize (z. B. hH -> Hh)
+    return combos.map(c =>
+      c.includes("H") && c.includes("h") ? "Hh" :
+      c === "HH" ? "HH" :
+      "hh"
+    );
   }
 };
 
