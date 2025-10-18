@@ -1,42 +1,43 @@
-// ===============================
-// Initialisierung & Event-Handling
-// ===============================
-document.getElementById("mareSelect").addEventListener("change", () => {
-  const mName = document.getElementById("mareSelect").value;
-  const m = mares.find((x) => x.Name === mName);
-  currentMares = m ? [m] : [];
-  if (currentMares.length) showResults(currentMares);
-});
+// main.js – Initialisierung & Eventlistener
 
-document.getElementById("ownerSelect").addEventListener("change", () => {
-  const o = document.getElementById("ownerSelect").value;
-  currentMares = mares.filter((m) => m.Besitzer === o);
-  if (currentMares.length) showResults(currentMares);
-});
+let mares = [];
+let stallions = [];
 
-document.getElementById("showAll").addEventListener("click", () => {
-  currentMares = mares;
-  showResults(currentMares);
-});
+document.addEventListener("DOMContentLoaded", async () => {
+  const data = await loadData();
+  mares = data.mares;
+  stallions = data.stallions;
 
-document.getElementById("sortSelect").addEventListener("change", () => {
-  if (currentMares.length) showResults(currentMares);
-});
+  const mareSelect = document.getElementById("mareSelect");
+  const ownerSelect = document.getElementById("ownerSelect");
+  const sortSelect = document.getElementById("sortSelect");
+  const allBtn = document.getElementById("showAll");
 
-// Info Tabs
-document.getElementById("toggleInfo").addEventListener("click", () => {
-  document.getElementById("infoTabs").classList.toggle("hidden");
-});
+  // Dropdowns füllen
+  [...new Set(mares.map(m => m.Name))].forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    mareSelect.appendChild(opt);
+  });
+  [...new Set(mares.map(m => m.Besitzer))].forEach(owner => {
+    const opt = document.createElement("option");
+    opt.value = owner;
+    opt.textContent = owner;
+    ownerSelect.appendChild(opt);
+  });
 
-document.querySelectorAll(".tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-    const id = tab.dataset.tab;
-    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+  function updateResults() {
+    const mareName = mareSelect.value;
+    const ownerName = ownerSelect.value;
+    const sortOpt = sortSelect.value;
+    renderResults(mares, stallions, mareName, ownerName, sortOpt);
+  }
+
+  mareSelect.addEventListener("change", updateResults);
+  ownerSelect.addEventListener("change", updateResults);
+  sortSelect.addEventListener("change", updateResults);
+  allBtn.addEventListener("click", () => {
+    renderResults(mares, stallions, null, null, sortSelect.value);
   });
 });
-
-// Start
-loadData();
