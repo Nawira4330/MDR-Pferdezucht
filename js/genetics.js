@@ -26,6 +26,7 @@ const Genetics = {
     return map[gene] ?? 0;
   },
 
+  // 🧬 Hauptberechnung: Kombination beider Eltern
   calculate(mare, stallion) {
     const TRAITS = [
       "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
@@ -53,11 +54,25 @@ const Genetics = {
         const m = this.normalizeGene(mPairs[i]);
         const s = this.normalizeGene(sPairs[i]);
 
-        const bestValue = i < 4 ? this.frontScore(s) : this.backScore(s);
-        const worstValue = i < 4 ? this.frontScore(m) : this.backScore(m);
+        // 👉 Kombination beider Eltern:
+        // Mögliche Nachkommengene: HH, Hh, hh
+        const childOptions = [
+          this.normalizeGene(m[0] + s[0]),
+          this.normalizeGene(m[0] + s[1]),
+          this.normalizeGene(m[1] + s[0]),
+          this.normalizeGene(m[1] + s[1]),
+        ];
 
-        bestSum += bestValue;
-        worstSum += worstValue;
+        // Bewertung der besten und schlechtesten Option
+        const childScores = childOptions.map((g, idx) =>
+          (i < 4 ? this.frontScore(g) : this.backScore(g))
+        );
+
+        const best = Math.max(...childScores);
+        const worst = Math.min(...childScores);
+
+        bestSum += best;
+        worstSum += worst;
       }
 
       totalBest += bestSum;
@@ -67,7 +82,7 @@ const Genetics = {
 
     if (countedTraits === 0) return { best: 0, worst: 0 };
 
-    // 👉 Nur durch die Anzahl der Merkmale teilen (nicht durch 8)
+    // 👉 Skalierung 0–16
     const finalBest = totalBest / countedTraits;
     const finalWorst = totalWorst / countedTraits;
 
