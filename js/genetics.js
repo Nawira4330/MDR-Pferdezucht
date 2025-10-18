@@ -1,7 +1,4 @@
-// genetics.js – Berechnung der genetischen Kompatibilität
-
 const Genetics = {
-  // 🔹 Holt das passende Feld, auch wenn Schreibweise abweicht
   getField(obj, key) {
     const target = key.toLowerCase().replace(/\s/g, "");
     const found = Object.keys(obj).find(
@@ -10,7 +7,6 @@ const Genetics = {
     return found ? obj[found] : "";
   },
 
-  // 🔹 Vereinfacht ein Genpaar auf HH, Hh oder hh
   normalizeGene(pair) {
     if (!pair) return "hh";
     const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
@@ -20,19 +16,16 @@ const Genetics = {
     return "hh";
   },
 
-  // 🔹 Bewertet vordere Genpaare (Ziel = HH)
   frontScore(gene) {
     const map = { "HH": 2, "Hh": 1, "hh": 0 };
     return map[gene] ?? 0;
   },
 
-  // 🔹 Bewertet hintere Genpaare (Ziel = hh)
   backScore(gene) {
     const map = { "HH": 0, "Hh": 1, "hh": 2 };
     return map[gene] ?? 0;
   },
 
-  // 🔹 Hauptfunktion zur Score-Berechnung
   calculate(mare, stallion) {
     const TRAITS = [
       "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist",
@@ -49,7 +42,6 @@ const Genetics = {
       const stallionVal = this.getField(stallion, trait);
       if (!mareVal || !stallionVal) continue;
 
-      // Leerzeichen entfernen und in 8 Paare teilen
       const mPairs = (mareVal.replace(/\s+/g, "").match(/.{1,2}/g) || []).slice(0, 8);
       const sPairs = (stallionVal.replace(/\s+/g, "").match(/.{1,2}/g) || []).slice(0, 8);
       if (mPairs.length < 8 || sPairs.length < 8) continue;
@@ -61,10 +53,7 @@ const Genetics = {
         const m = this.normalizeGene(mPairs[i]);
         const s = this.normalizeGene(sPairs[i]);
 
-        // Beste mögliche Kombination
         const bestValue = i < 4 ? this.frontScore(s) : this.backScore(s);
-
-        // Schlechteste mögliche Kombination
         const worstValue = i < 4 ? this.frontScore(m) : this.backScore(m);
 
         bestSum += bestValue;
@@ -78,7 +67,7 @@ const Genetics = {
 
     if (countedTraits === 0) return { best: 0, worst: 0 };
 
-    // 👉 Durchschnitt über alle 14 Merkmale → Skala 0–16
+    // 👉 Nur durch die Anzahl der Merkmale teilen (nicht durch 8)
     const finalBest = totalBest / countedTraits;
     const finalWorst = totalWorst / countedTraits;
 
