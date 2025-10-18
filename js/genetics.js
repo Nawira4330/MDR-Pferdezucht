@@ -50,63 +50,56 @@ function getPairScore(isFront, sPair, hPair) {
 // ==============================================
 function calculateScores(mare, stallion) {
   const TRAITS = [
-    "Kopf", "Gebiss", "Hals", "Halsansatz", "Widerrist", "Schulter",
-    "Brust", "Rückenlinie", "Rückenlänge", "Kruppe",
-    "Beinwinkelung", "Beinstellung", "Fesseln", "Hufe"
+    "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
+    "Brust","Rückenlinie","Rückenlänge","Kruppe",
+    "Beinwinkelung","Beinstellung","Fesseln","Hufe"
   ];
 
-  function getField(obj, key) {
-    const found = Object.keys(obj).find(
-      (k) => k.replace(/\s+/g, "").toLowerCase() === key.toLowerCase()
-    );
-    return found ? obj[found] : "";
-  }
-
-  let totalBest = 0;
-  let totalWorst = 0;
-  let foundAny = false;
+  let totalBest = 0, totalWorst = 0, foundAny = false;
 
   for (const trait of TRAITS) {
-    let mareVal = (getField(mare, trait) || "").replace(/\s+/g, "");
-    let stallionVal = (getField(stallion, trait) || "").replace(/\s+/g, "");
-    if (!mareVal || !stallionVal || !mareVal.includes("|") || !stallionVal.includes("|"))
-      continue;
+    // Feld robust holen (auch wenn Leerzeichen oder falsche Header)
+    const mareVal = Object.entries(mare).find(([k]) =>
+      k.toLowerCase().replace(/\s/g,"") === trait.toLowerCase())?.[1] || "";
+    const stallVal = Object.entries(stallion).find(([k]) =>
+      k.toLowerCase().replace(/\s/g,"") === trait.toLowerCase())?.[1] || "";
+
+    if (!mareVal || !stallVal) continue;
+
+    // alle Leerzeichen & Steuerzeichen entfernen
+    const m = mareVal.replace(/\s+/g,"").trim();
+    const h = stallVal.replace(/\s+/g,"").trim();
+    if (!m.includes("|") || !h.includes("|")) continue;
     foundAny = true;
 
-    // Front und Back trennen
-    const [mFront, mBack] = mareVal.split("|");
-    const [hFront, hBack] = stallionVal.split("|");
+    // Front/Back trennen
+    const [mFront, mBack] = m.split("|");
+    const [hFront, hBack] = h.split("|");
 
-    const mFrontPairs = mFront.match(/.{1,2}/g) || [];
-    const mBackPairs = mBack.match(/.{1,2}/g) || [];
-    const hFrontPairs = hFront.match(/.{1,2}/g) || [];
-    const hBackPairs = hBack.match(/.{1,2}/g) || [];
+    // Falls zu kurz → auffüllen
+    const toPairs = (s) => (s.match(/.{1,2}/g) || []).slice(0,8);
+    const mFrontPairs = toPairs(mFront.padEnd(8,"h"));
+    const hFrontPairs = toPairs(hFront.padEnd(8,"h"));
+    const mBackPairs = toPairs(mBack.padEnd(8,"h"));
+    const hBackPairs = toPairs(hBack.padEnd(8,"h"));
 
     let traitBest = 0, traitWorst = 0;
 
-    // Vordere 4 Paare (Ziel HH)
-    for (let i = 0; i < 4; i++) {
-      const mPair = mFrontPairs[i];
-      const hPair = hFrontPairs[i];
-      if (!mPair || !hPair) continue;
-      const { best, worst } = getPairScore(true, mPair, hPair);
-      traitBest += best;
-      traitWorst += worst;
+    // FRONT (HH-Ziel)
+    for (let i=0;i<4;i++){
+      const {best,worst} = getPairScore(true,mFrontPairs[i],hFrontPairs[i]);
+      traitBest += best; traitWorst += worst;
     }
-
-    // Hintere 4 Paare (Ziel hh)
-    for (let i = 0; i < 4; i++) {
-      const mPair = mBackPairs[i];
-      const hPair = hBackPairs[i];
-      if (!mPair || !hPair) continue;
-      const { best, worst } = getPairScore(false, mPair, hPair);
-      traitBest += best;
-      traitWorst += worst;
+    // BACK (hh-Ziel)
+    for (let i=0;i<4;i++){
+      const {best,worst} = getPairScore(false,mBackPairs[i],hBackPairs[i]);
+      traitBest += best; traitWorst += worst;
     }
 
     totalBest += traitBest;
     totalWorst += traitWorst;
   }
 
-  return foundAny ? { best: totalBest, worst: totalWorst } : { best: 0, worst: 0 };
+  return foundAny ? {best:totalBest, worst:totalWorst} : {best:0, worst:0};
 }
+
