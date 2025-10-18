@@ -1,81 +1,105 @@
 /* ============================
-   Grundlayout & Farben
+   Grundlayout & Farbvariablen
 ============================ */
 :root {
   --green: #6b9d00;
+  --darkgreen: #4d7300;
   --lightblue: #c8e8ff;
-  --darkgreen: #527700;
   --text: #222;
-  --bg: #f8fdf8;
-  --white: #ffffff;
-  --gray: #777;
+  --gray: #666;
+  --white: #fff;
+  --bg: #f7fbf8;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 body {
-  margin: 0;
   font-family: "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
+  margin: 0;
   line-height: 1.6;
 }
 
 /* ============================
-   Header mit Farbverlauf
+   HEADER mit Farbverlauf
 ============================ */
 header {
   background: linear-gradient(90deg, var(--green), var(--lightblue));
   color: white;
   text-align: center;
-  padding: 1.5rem 1rem;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem 1rem 1rem 1rem;
+  box-shadow: var(--shadow);
 }
 
 header h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: 1px;
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.5px;
 }
 
 /* ============================
-   Warnhinweis
+   Warnhinweis (dauerhaft sichtbar)
 ============================ */
 .warning {
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid white;
   border-radius: 8px;
-  padding: 0.5rem 1rem;
-  margin-top: 0.8rem;
   display: inline-block;
-  font-weight: 500;
+  padding: 0.6rem 1rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================
-   Infobox mit Tabs (eingeklappt)
+   INFOBOX mit Tabs (standardmäßig eingeklappt)
 ============================ */
+.info-toggle {
+  display: block;
+  width: 100%;
+  background: var(--green);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  padding: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.info-toggle:hover {
+  background: var(--darkgreen);
+}
+
 .info-box {
-  max-width: 900px;
-  margin: 1.5rem auto;
+  max-width: 950px;
+  margin: 1.2rem auto;
   background: var(--white);
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
-/* Tabs oben */
+/* Tabs */
 .tab-buttons {
   display: flex;
-  justify-content: space-evenly;
   background: var(--lightblue);
+  border-bottom: 2px solid #e3f5ff;
 }
 
 .tab-btn {
   flex: 1;
   padding: 0.8rem;
-  cursor: pointer;
-  border: none;
   background: none;
+  border: none;
+  cursor: pointer;
   font-weight: 600;
+  font-size: 1rem;
   color: var(--darkgreen);
   transition: all 0.2s ease;
 }
@@ -89,57 +113,59 @@ header h1 {
   color: white;
 }
 
-/* Tab Inhalte */
 .tab-content {
   display: none;
   padding: 1rem 1.5rem;
+  font-size: 0.95rem;
 }
 
 .tab-content.active {
   display: block;
 }
 
-/* Wenn eingeklappt */
 .info-box.collapsed .tab-content {
   display: none !important;
 }
 
-/* Toggle-Button */
-.info-toggle {
-  display: block;
+/* Tabellen */
+.score-table {
   width: 100%;
-  background: var(--darkgreen);
-  color: white;
-  padding: 0.6rem;
-  text-align: center;
-  cursor: pointer;
-  font-weight: 600;
-  border: none;
-  transition: background 0.3s;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }
 
-.info-toggle:hover {
-  background: var(--green);
+.score-table th,
+.score-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+
+.score-table th {
+  background: var(--lightblue);
+  color: var(--darkgreen);
 }
 
 /* ============================
-   Filtersektion
+   FILTERBEREICH
 ============================ */
 .filters {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
-  padding: 1.2rem;
   background: white;
   border-radius: 10px;
-  max-width: 900px;
+  max-width: 950px;
   margin: 1rem auto;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.5rem;
+  box-shadow: var(--shadow);
 }
 
 .filters label {
   font-weight: 600;
+  color: var(--darkgreen);
 }
 
 .filters select,
@@ -148,6 +174,7 @@ header h1 {
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 0.95rem;
+  background: #fdfdfd;
 }
 
 .filters select:focus {
@@ -157,9 +184,10 @@ header h1 {
 .btn-primary {
   background: var(--green);
   color: white;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  font-weight: 600;
+  transition: background 0.2s;
 }
 
 .btn-primary:hover {
@@ -167,20 +195,20 @@ header h1 {
 }
 
 /* ============================
-   Ergebnisbereich
+   ERGEBNISSE
 ============================ */
 #results {
-  max-width: 900px;
+  max-width: 950px;
   margin: 1.5rem auto;
 }
 
 .mare-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 1rem 1.2rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
 }
 
 .mare-card:hover {
@@ -189,11 +217,12 @@ header h1 {
 
 .mare-card h3 {
   color: var(--green);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.3rem;
 }
 
 .mare-card p {
-  margin: 0.2rem 0;
+  margin: 0.3rem 0;
+  color: var(--gray);
 }
 
 /* Hengst-Einträge */
@@ -225,50 +254,35 @@ header h1 {
 }
 
 /* ============================
-   Tabellen & Footer
+   FOOTER
 ============================ */
-.score-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.score-table th,
-.score-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  text-align: left;
-}
-
-.score-table th {
-  background: var(--lightblue);
-  color: var(--darkgreen);
-}
-
 footer {
   text-align: center;
   padding: 1rem;
   font-size: 0.9rem;
   color: #555;
   background: #f1f1f1;
-  margin-top: 2rem;
   border-top: 2px solid var(--lightblue);
+  margin-top: 2rem;
 }
 
 /* ============================
-   Responsive
+   RESPONSIVE DESIGN
 ============================ */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   header h1 {
     font-size: 1.4rem;
   }
+
   .filters {
     flex-direction: column;
     align-items: stretch;
   }
+
   .filters label {
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
   }
+
   .stallion-entry .score {
     float: none;
     display: block;
