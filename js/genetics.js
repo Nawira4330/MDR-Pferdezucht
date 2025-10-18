@@ -1,11 +1,5 @@
-// ==========================
-// 🧬 genetics.js
-// Berechnet individuelle Scores für jede Stute-Hengst-Kombination
-// ==========================
+// genetics.js – Mendelbasierte Berechnung der Fohlen-Genetik
 
-/**
- * Findet ein Feld im CSV-Objekt unabhängig von Groß-/Kleinschreibung und Leerzeichen
- */
 function getField(obj, key) {
   const target = key.toLowerCase().replace(/\s/g, "");
   const found = Object.keys(obj).find(
@@ -14,9 +8,7 @@ function getField(obj, key) {
   return found ? obj[found] : "";
 }
 
-/**
- * Normalisiert Gene zu HH, Hh oder hh
- */
+// Normalisiert jede Genstelle auf HH, Hh, hh
 function normalizeGene(pair) {
   if (!pair) return "hh";
   const clean = pair.replace(/[^Hh]/g, "").slice(0, 2);
@@ -26,38 +18,33 @@ function normalizeGene(pair) {
   return "hh";
 }
 
-/**
- * Punktetabellen für die Berechnung
- */
-const FRONT = {
-  "HH-HH": 4, "HH-Hh": 3, "HH-hh": 1,
-  "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
-  "hh-HH": 4, "hh-Hh": 3, "hh-hh": 0
-};
-const BACK = {
-  "HH-HH": 0, "HH-Hh": 2, "HH-hh": 4,
-  "Hh-HH": 1, "Hh-Hh": 3, "Hh-hh": 4,
-  "hh-HH": 2, "hh-Hh": 3, "hh-hh": 4
-};
-const FRONT_WORST = {
-  "HH-HH": 0, "HH-Hh": 1, "HH-hh": 2,
-  "Hh-HH": 1, "Hh-Hh": 2, "Hh-hh": 3,
-  "hh-HH": 4, "hh-Hh": 3, "hh-hh": 2
-};
-const BACK_WORST = {
-  "HH-HH": 4, "HH-Hh": 3, "HH-hh": 2,
-  "Hh-HH": 3, "Hh-Hh": 2, "Hh-hh": 1,
-  "hh-HH": 2, "hh-Hh": 1, "hh-hh": 0
-};
+// Gibt alle 4 möglichen Nachkommenkombinationen nach Mendel zurück
+function possibleOffspringGenes(mareGene, stallionGene) {
+  const allelesM = mareGene.split("");
+  const allelesS = stallionGene.split("");
+  const combos = [];
+  for (const m of allelesM) {
+    for (const s of allelesS) {
+      const combo = (m + s).replace(/(.)(?=.*\1)/g, "$1"); // normalize
+      combos.push(normalizeGene(combo));
+    }
+  }
+  return combos;
+}
 
-function frontScore(m, h)      { return FRONT[`${m}-${h}`] ?? 0; }
-function backScore(m, h)       { return BACK[`${m}-${h}`] ?? 0; }
-function worstFrontScore(m, h) { return FRONT_WORST[`${m}-${h}`] ?? 0; }
-function worstBackScore(m, h)  { return BACK_WORST[`${m}-${h}`] ?? 0; }
+// Bewertet ein Gen nach Bereich (front/back)
+function geneScore(gene, isFront) {
+  if (isFront) {
+    if (gene === "HH") return 2;
+    if (gene === "Hh") return 1;
+    return 0;
+  } else {
+    if (gene === "hh") return 2;
+    if (gene === "Hh") return 1;
+    return 0;
+  }
+}
 
-/**
- * Berechnet Best- & Worst-Scores für alle 14 Merkmale
- */
 function calculateScores(mare, stallion) {
   const TRAITS = [
     "Kopf","Gebiss","Hals","Halsansatz","Widerrist","Schulter",
@@ -67,52 +54,57 @@ function calculateScores(mare, stallion) {
 
   let totalBest = 0;
   let totalWorst = 0;
+  let countedTraits = 0;
 
   for (const trait of TRAITS) {
     const rawM = getField(mare, trait);
     const rawH = getField(stallion, trait);
     if (!rawM || !rawH) continue;
 
-    // 🔹 Säubern der Werte
-    const mClean = String(rawM).replace(/["']/g,"").replace(/\s+/g,"").replace(/\uFEFF/g,"").trim();
-    const hClean = String(rawH).replace(/["']/g,"").replace(/\s+/g,"").replace(/\uFEFF/g,"").trim();
+    const mClean = String(rawM).replace(/["'\s\uFEFF]/g, "").trim();
+    const hClean = String(rawH).replace(/["'\s\uFEFF]/g, "").trim();
     if (!mClean || !hClean) continue;
 
-    // 🔹 Alle Genblöcke kombinieren
-    const mJoined = mClean.split("|").map(p=>p.trim()).filter(Boolean).join("");
-    const hJoined = hClean.split("|").map(p=>p.trim()).filter(Boolean).join("");
-
-    // 🔹 In 8 Paare zerlegen
-    const mPairs = (mJoined.match(/.{1,2}/g) || []).slice(0, 8);
-    const hPairs = (hJoined.match(/.{1,2}/g) || []).slice(0, 8);
+    const mPairs = (mClean.replace(/\|/g, "").match(/.{1,2}/g) || []).slice(0, 8);
+    const hPairs = (hClean.replace(/\|/g, "").match(/.{1,2}/g) || []).slice(0, 8);
     if (mPairs.length < 8 || hPairs.length < 8) continue;
 
-    const mFront = mPairs.slice(0,4).map(normalizeGene);
-    const mBack  = mPairs.slice(4,8).map(normalizeGene);
-    const hFront = hPairs.slice(0,4).map(normalizeGene);
-    const hBack  = hPairs.slice(4,8).map(normalizeGene);
+    let bestTrait = 0;
+    let worstTrait = 0;
 
-    let traitBest = 0;
-    let traitWorst = 0;
-
-    // 🔹 Vorne = Schutz der Stärken (HH bevorzugt)
+    // 4 vordere Paare (Ziel: HH)
     for (let i = 0; i < 4; i++) {
-      traitBest  += frontScore(mFront[i], hFront[i]);
-      traitWorst += worstFrontScore(mFront[i], hFront[i]);
+      const mareGene = normalizeGene(mPairs[i]);
+      const stallionGene = normalizeGene(hPairs[i]);
+      const offspring = possibleOffspringGenes(mareGene, stallionGene);
+      const scores = offspring.map(g => geneScore(g, true));
+      bestTrait += Math.max(...scores);
+      worstTrait += Math.min(...scores);
     }
 
-    // 🔹 Hinten = Ausgleich der Schwächen (hh bevorzugt)
-    for (let i = 0; i < 4; i++) {
-      traitBest  += backScore(mBack[i], hBack[i]);
-      traitWorst += worstBackScore(mBack[i], hBack[i]);
+    // 4 hintere Paare (Ziel: hh)
+    for (let i = 4; i < 8; i++) {
+      const mareGene = normalizeGene(mPairs[i]);
+      const stallionGene = normalizeGene(hPairs[i]);
+      const offspring = possibleOffspringGenes(mareGene, stallionGene);
+      const scores = offspring.map(g => geneScore(g, false));
+      bestTrait += Math.max(...scores);
+      worstTrait += Math.min(...scores);
     }
 
-    totalBest  += traitBest;
-    totalWorst += traitWorst;
+    totalBest += bestTrait;
+    totalWorst += worstTrait;
+    countedTraits++;
   }
 
-  return { best: totalBest, worst: totalWorst };
+  // Durchschnitt pro Merkmal
+  const bestAvg = countedTraits > 0 ? totalBest / countedTraits : 0;
+  const worstAvg = countedTraits > 0 ? totalWorst / countedTraits : 0;
+
+  return {
+    best: Math.round(bestAvg * 10) / 10, // z. B. 13.4 Punkte
+    worst: Math.round(worstAvg * 10) / 10
+  };
 }
 
-// 🔹 Export als zentrales Genetics-Objekt für UI.js
-window.Genetics = { calculateScores };
+window.calculateScores = calculateScores;
