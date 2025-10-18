@@ -1,121 +1,126 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paarungsanalyse – Exterieur-Matching</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- 🔹 Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- 🔹 Meta Info -->
+  <meta name="description" content="Paarungsanalyse – Exterieur-Matching für die MDR-Zucht. Automatische Berechnung der besten Hengste je Stute basierend auf genetischen Exterieurwerten.">
 </head>
+
 <body>
   <header>
-    Paarungsanalyse – Exterieur-Matching
+    <h1>Paarungsanalyse – Exterieur-Matching</h1>
+    <p class="warning">
+      ⚠️ Hinweis: Diese Analyse berücksichtigt keine Inzucht oder Doppelvererbung des Overo-Gens.
+    </p>
   </header>
 
-  <!-- ⚠️ Dauerhafte Warnbox -->
-  <div class="warning-box">
-    ⚠️ <strong>Wichtiger Hinweis:</strong> Inzucht und die doppelte Vererbung des Overo-Gens 
-    werden in dieser Analyse <u>nicht</u> berücksichtigt.  
-    Die Ergebnisse dienen ausschließlich der theoretischen Exterieur-Abschätzung.
-  </div>
-
-  <!-- 📘 Infobox (standardmäßig geschlossen) -->
-  <div class="info-box">
-    <button id="toggleInfo" class="toggle-btn">ℹ️ Info & Score-Erklärung anzeigen</button>
-
-    <div id="infoTabs" class="info-tabs hidden">
-      <div class="tab-header">
-        <button class="tab-btn active" data-tab="info">Info zur Berechnung</button>
-        <button class="tab-btn" data-tab="score">Score-Erklärung</button>
+  <main>
+    <!-- ===================== -->
+    <!-- ℹ️ Infobox mit Tabs -->
+    <!-- ===================== -->
+    <section class="info-box">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="tab1">Info zur Berechnung der Hengste</button>
+        <button class="tab-btn" data-tab="tab2">Score-Berechnung & Interpretation</button>
       </div>
 
-      <div class="tab-content active" id="info">
-        <h2>Info zur Berechnung der Hengste</h2>
+      <div id="tab1" class="tab-content active">
         <p>
-          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale berechnet. 
-          Ziel ist ein Fohlen mit idealer Kombination:
-          <strong>HH HH HH HH | hh hh hh hh</strong>
+          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
+          Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> erreicht:
         </p>
         <ul>
-          <li>Stärken der Stute werden geschützt</li>
-          <li>Schwächen werden ausgeglichen</li>
-          <li>Bewertung erfolgt für 14 Exterieurmerkmale</li>
+          <li>Stärken der Stute werden unterstützt (vorn HH bevorzugt)</li>
+          <li>Schwächen werden ausgeglichen (hinten hh bevorzugt)</li>
+          <li>Der Score wird aus Front- und Back-Genetik berechnet</li>
         </ul>
       </div>
 
-      <div class="tab-content" id="score">
-        <h2>Score-Berechnung und Interpretation</h2>
+      <div id="tab2" class="tab-content">
         <p>
-          Jedes Merkmal hat 8 Genpaare – die vorderen 4 sollen „HH“ (stark), die hinteren 4 „hh“ (weich) ergeben.  
-          Ein Merkmal kann bis zu <strong>32 Punkte</strong> bringen (8 × 4 Punkte).
+          Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz,
+          Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe,
+          Beinwinkelung, Beinstellung, Fesseln, Hufe) werden die 8 Gen-Paare einzeln bewertet.
+          Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
+          (8 Paare × 4 Punkte = 32; 14 Merkmale = max. 448 Punkte).
         </p>
-        <table>
+        <table class="score-table">
+          <tr><th>Score</th><th>Bedeutung</th></tr>
           <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-          <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
+          <tr><td>300–400</td><td>Sehr gute Kombination – empfohlen</td></tr>
           <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
-          <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
+          <tr><td>100–200</td><td>Eher ungünstig</td></tr>
           <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
         </table>
-        <p>Die Berechnung berücksichtigt sowohl die besten als auch die schlechtesten Vererbungsmöglichkeiten.</p>
+        <p>
+          Ein ℹ️-Icon neben jedem Hengst zeigt an, wie sich der Score aus den einzelnen Merkmalen zusammensetzt.
+        </p>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- 🧩 Filter & Sortierung -->
-  <div class="control-panel">
-    <label for="mareSelect">Stute auswählen:</label>
-    <select id="mareSelect">
-      <option value="">– Stute wählen –</option>
-    </select>
+    <!-- ===================== -->
+    <!-- 🔽 Auswahl -->
+    <!-- ===================== -->
+    <section class="filters">
+      <label for="mareSelect">Stute:</label>
+      <select id="mareSelect">
+        <option value="">– Bitte wählen –</option>
+      </select>
 
-    <label for="ownerSelect">Besitzer auswählen:</label>
-    <select id="ownerSelect">
-      <option value="">– Besitzer wählen –</option>
-    </select>
+      <label for="ownerSelect">Besitzer:</label>
+      <select id="ownerSelect">
+        <option value="">– Bitte wählen –</option>
+      </select>
 
-    <label for="sortSelect">Sortierung:</label>
-    <select id="sortSelect">
-      <option value="range">Kleinste Range (Differenz)</option>
-      <option value="best">Bester Score (Best)</option>
-      <option value="worst">Bester Score (Worst)</option>
-    </select>
+      <label for="sortSelect">Sortierung:</label>
+      <select id="sortSelect">
+        <option value="best">Bester Score (Best)</option>
+        <option value="worst">Bester Score (Worst)</option>
+        <option value="range">Kleinste Range</option>
+      </select>
 
-    <button id="showAll">Alle anzeigen</button>
-  </div>
+      <button id="showAll" class="btn-primary">Alle anzeigen</button>
+    </section>
 
-  <!-- 🧮 Ergebnisse -->
-  <main id="results"></main>
+    <!-- ===================== -->
+    <!-- 📊 Ergebnisse -->
+    <!-- ===================== -->
+    <section id="results"></section>
+  </main>
 
   <footer>
     © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
   </footer>
 
-<!-- 🧬 Reihenfolge in index.html -->
-<script src="js/dataloader.js"></script>
-<script src="js/genetics.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js"></script>
+  <!-- ===================== -->
+  <!-- 📜 Skripte (richtige Reihenfolge!) -->
+  <!-- ===================== -->
+  <script src="js/dataloader.js"></script>
+  <script src="js/genetics.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
 
-
-  <!-- 💡 Tabs- und Info-Steuerung -->
+  <!-- Tabs-Steuerung -->
   <script>
-    // Tabs wechseln
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(btn.dataset.tab).classList.add("active");
-      });
-    });
+    document.addEventListener("DOMContentLoaded", () => {
+      const buttons = document.querySelectorAll(".tab-btn");
+      const contents = document.querySelectorAll(".tab-content");
 
-    // Infobox öffnen/schließen
-    const toggleButton = document.getElementById("toggleInfo");
-    const infoTabs = document.getElementById("infoTabs");
-    toggleButton.addEventListener("click", () => {
-      infoTabs.classList.toggle("hidden");
-      toggleButton.textContent = infoTabs.classList.contains("hidden")
-        ? "ℹ️ Info & Score-Erklärung anzeigen"
-        : "❌ Info & Score-Erklärung ausblenden";
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          buttons.forEach(b => b.classList.remove("active"));
+          contents.forEach(c => c.classList.remove("active"));
+
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
     });
   </script>
 </body>
