@@ -4,124 +4,138 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paarungsanalyse – Exterieur-Matching</title>
-
-  <!-- 🔹 Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- 🔹 Meta Info -->
-  <meta name="description" content="Paarungsanalyse – Exterieur-Matching für die MDR-Zucht. Automatische Berechnung der besten Hengste je Stute basierend auf genetischen Exterieurwerten.">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
+  <!-- ============================
+       HEADER
+  ============================= -->
   <header>
     <h1>Paarungsanalyse – Exterieur-Matching</h1>
-    <p class="warning">
-      ⚠️ Hinweis: Diese Analyse berücksichtigt keine Inzucht oder Doppelvererbung des Overo-Gens.
-    </p>
+    <div class="warning">
+      ⚠️ Hinweis: Inzucht und die Vererbung des Overo-Gens werden in dieser Analyse <b>nicht berücksichtigt</b>.
+    </div>
   </header>
 
-  <main>
-    <!-- ===================== -->
-    <!-- ℹ️ Infobox mit Tabs -->
-    <!-- ===================== -->
-    <section class="info-box">
-      <div class="tab-buttons">
-        <button class="tab-btn active" data-tab="tab1">Info zur Berechnung der Hengste</button>
-        <button class="tab-btn" data-tab="tab2">Score-Berechnung & Interpretation</button>
-      </div>
+  <!-- ============================
+       INFOBOX (standardmäßig eingeklappt)
+  ============================= -->
+  <button class="info-toggle" onclick="document.querySelector('.info-box').classList.toggle('collapsed')">
+    ℹ️ Informationen anzeigen / verbergen
+  </button>
 
-      <div id="tab1" class="tab-content active">
-        <p>
-          Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale ausgewählt.
-          Ziel ist es, dass das Fohlen den Idealwert <strong>HH HH HH HH | hh hh hh hh</strong> erreicht:
-        </p>
-        <ul>
-          <li>Stärken der Stute werden unterstützt (vorn HH bevorzugt)</li>
-          <li>Schwächen werden ausgeglichen (hinten hh bevorzugt)</li>
-          <li>Der Score wird aus Front- und Back-Genetik berechnet</li>
-        </ul>
-      </div>
+  <section class="info-box collapsed">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="openTab(event, 'infoTab')">Info zur Berechnung der Hengste</button>
+      <button class="tab-btn" onclick="openTab(event, 'scoreTab')">Score-Berechnung & Interpretation</button>
+    </div>
 
-      <div id="tab2" class="tab-content">
-        <p>
-          Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz,
-          Widerrist, Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe,
-          Beinwinkelung, Beinstellung, Fesseln, Hufe) werden die 8 Gen-Paare einzeln bewertet.
-          Ein Merkmal kann maximal <strong>32 Punkte</strong> erreichen
-          (8 Paare × 4 Punkte = 32; 14 Merkmale = max. 448 Punkte).
-        </p>
-        <table class="score-table">
-          <tr><th>Score</th><th>Bedeutung</th></tr>
+    <div id="infoTab" class="tab-content active">
+      <h2>Info zur Berechnung der Hengste</h2>
+      <p>
+        Die Top-3-Hengste für jede Stute werden anhand der Exterieur-Merkmale analysiert.
+        Ziel ist, dass das Fohlen den Idealwert
+        <strong>HH HH HH HH | hh hh hh hh</strong> möglichst genau erreicht.
+      </p>
+      <ul>
+        <li>Stärken der Stute werden unterstützt (vorne HH, hinten hh)</li>
+        <li>Schwächen werden gezielt ausgeglichen</li>
+        <li>Die Bewertung erfolgt pro Merkmal auf Basis von 8 Gen-Paaren</li>
+      </ul>
+      <p>
+        Es werden für jede Stute alle Hengste verglichen, um die bestmögliche genetische Kombination zu finden.
+        Eine Überkorrektur (z. B. HH + HH) wird positiv gewertet, da sie die gewünschte Dominanz stärkt.
+      </p>
+    </div>
+
+    <div id="scoreTab" class="tab-content">
+      <h2>Score-Berechnung & Interpretation</h2>
+      <p>
+        Für jedes der <strong>14 Exterieurmerkmale</strong> (Kopf, Gebiss, Hals, Halsansatz, Widerrist,
+        Schulter, Brust, Rückenlinie, Rückenlänge, Kruppe, Beinwinkelung, Beinstellung, Fesseln, Hufe)
+        werden 8 Gen-Paare analysiert:
+      </p>
+      <p>
+        <strong>Vorne (4 Paare):</strong> Ziel ist HH<br>
+        <strong>Hinten (4 Paare):</strong> Ziel ist hh
+      </p>
+
+      <table class="score-table">
+        <thead><tr><th>Score</th><th>Bewertung</th></tr></thead>
+        <tbody>
           <tr><td>400–448</td><td>Nahezu perfekte genetische Ergänzung</td></tr>
-          <tr><td>300–400</td><td>Sehr gute Kombination – empfohlen</td></tr>
+          <tr><td>300–400</td><td>Sehr gute Kombination, empfohlen</td></tr>
           <tr><td>200–300</td><td>Solide Kombination mit Potenzial</td></tr>
-          <tr><td>100–200</td><td>Eher ungünstig</td></tr>
+          <tr><td>100–200</td><td>Genetisch eher ungünstig</td></tr>
           <tr><td>0–100</td><td>Nicht empfohlen</td></tr>
-        </table>
-        <p>
-          Ein ℹ️-Icon neben jedem Hengst zeigt an, wie sich der Score aus den einzelnen Merkmalen zusammensetzt.
-        </p>
-      </div>
-    </section>
+        </tbody>
+      </table>
 
-    <!-- ===================== -->
-    <!-- 🔽 Auswahl -->
-    <!-- ===================== -->
-    <section class="filters">
-      <label for="mareSelect">Stute:</label>
-      <select id="mareSelect">
-        <option value="">– Bitte wählen –</option>
-      </select>
+      <p>
+        Der <strong>Score</strong> ergibt sich aus der Summe der Punktwerte aller Merkmale.
+        Der <strong>Best Score</strong> repräsentiert die ideale genetische Kombination,
+        der <strong>Worst Score</strong> die ungünstigste Variante.
+      </p>
+    </div>
+  </section>
 
-      <label for="ownerSelect">Besitzer:</label>
-      <select id="ownerSelect">
-        <option value="">– Bitte wählen –</option>
-      </select>
+  <!-- ============================
+       FILTERBEREICH
+  ============================= -->
+  <section class="filters">
+    <label for="mareSelect">Stute:</label>
+    <select id="mareSelect">
+      <option value="">-- Wähle eine Stute --</option>
+    </select>
 
-      <label for="sortSelect">Sortierung:</label>
-      <select id="sortSelect">
-        <option value="best">Bester Score (Best)</option>
-        <option value="worst">Bester Score (Worst)</option>
-        <option value="range">Kleinste Range</option>
-      </select>
+    <label for="ownerSelect">Besitzer:</label>
+    <select id="ownerSelect">
+      <option value="">-- Wähle Besitzer --</option>
+    </select>
 
-      <button id="showAll" class="btn-primary">Alle anzeigen</button>
-    </section>
+    <label for="sortSelect">Sortierung:</label>
+    <select id="sortSelect">
+      <option value="best">Bester Score</option>
+      <option value="worst">Schlechtester Score</option>
+      <option value="range">Kleinste Differenz (Range)</option>
+    </select>
 
-    <!-- ===================== -->
-    <!-- 📊 Ergebnisse -->
-    <!-- ===================== -->
-    <section id="results"></section>
-  </main>
+    <button id="showAll" class="btn-primary">Alle anzeigen</button>
+  </section>
 
+  <!-- ============================
+       ERGEBNISSE
+  ============================= -->
+  <section id="results"></section>
+
+  <!-- ============================
+       FOOTER
+  ============================= -->
   <footer>
     © 2025 MDR-Zucht | Entwickelt mit ❤️ für die Zuchtplanung
   </footer>
 
-  <!-- ===================== -->
-  <!-- 📜 Skripte (richtige Reihenfolge!) -->
-  <!-- ===================== -->
+  <!-- ============================
+       JAVASCRIPT
+  ============================= -->
+  <script>
+    // Tabs steuern
+    function openTab(evt, tabId) {
+      const contents = document.querySelectorAll(".tab-content");
+      const buttons = document.querySelectorAll(".tab-btn");
+
+      contents.forEach(c => c.classList.remove("active"));
+      buttons.forEach(b => b.classList.remove("active"));
+
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+    }
+  </script>
+
+  <!-- Reihenfolge beachten -->
   <script src="js/dataLoader.js"></script>
   <script src="js/genetics.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
-
-  <!-- Tabs-Steuerung -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const buttons = document.querySelectorAll(".tab-btn");
-      const contents = document.querySelectorAll(".tab-content");
-
-      buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          buttons.forEach(b => b.classList.remove("active"));
-          contents.forEach(c => c.classList.remove("active"));
-
-          btn.classList.add("active");
-          document.getElementById(btn.dataset.tab).classList.add("active");
-        });
-      });
-    });
-  </script>
 </body>
 </html>
