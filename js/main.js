@@ -1,67 +1,54 @@
 // ==========================
 // ⚙️ main.js
-// Initialisiert die Seite und verknüpft UI mit Daten
+// Initialisierung & Eventlistener
 // ==========================
 
+let mares = [];
+let stallions = [];
+
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🚀 MDR-Zucht: Seite wird initialisiert...");
+  console.log("🚀 Starte Datenimport...");
 
-  // --- Daten laden ---
-  const { mares, stallions } = await DataLoader.loadAllData();
-  window.mares = mares;
-  window.stallions = stallions;
+  const data = await DataLoader.loadData();
+  mares = data.mares;
+  stallions = data.stallions;
 
-  // --- Dropdowns befüllen ---
-  DataLoader.populateDropdowns(mares);
-  console.log(`✅ ${mares.length} Stuten und ${stallions.length} Hengste geladen.`);
-
-  // --- Elemente auswählen ---
   const mareSelect = document.getElementById("mareSelect");
   const ownerSelect = document.getElementById("ownerSelect");
   const sortSelect = document.getElementById("sortSelect");
-  const showAllBtn = document.getElementById("showAll");
+  const allBtn = document.getElementById("showAll");
 
-  // --- Standardanzeige: leer, bis etwas gewählt wird ---
-  const resultsContainer = document.getElementById("results");
-  resultsContainer.innerHTML = `
-    <div style="text-align:center; color:#777; margin-top:1rem;">
-      Bitte wähle eine Stute, einen Besitzer oder „Alle anzeigen“, um Ergebnisse zu sehen.
-    </div>
-  `;
-
-  // --- Event: Stute ändern ---
-  mareSelect.addEventListener("change", () => {
-    const selectedMare = mareSelect.value;
-    const selectedOwner = ownerSelect.value;
-    const sortMode = sortSelect.value;
-
-    console.log(`🐴 Stute ausgewählt: ${selectedMare}`);
-    UI.showResults(selectedMare, selectedOwner, sortMode);
+  // 🔹 Dropdowns befüllen
+  [...new Set(mares.map(m => m.Name).filter(Boolean))].forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    mareSelect.appendChild(opt);
   });
 
-  // --- Event: Besitzer ändern ---
-  ownerSelect.addEventListener("change", () => {
-    const selectedOwner = ownerSelect.value;
-    const sortMode = sortSelect.value;
-
-    console.log(`👤 Besitzer ausgewählt: ${selectedOwner}`);
-    UI.showResults("", selectedOwner, sortMode);
+  [...new Set(mares.map(m => m.Besitzer).filter(Boolean))].forEach(owner => {
+    const opt = document.createElement("option");
+    opt.value = owner;
+    opt.textContent = owner;
+    ownerSelect.appendChild(opt);
   });
 
-  // --- Event: Sortierung ändern ---
-  sortSelect.addEventListener("change", () => {
-    const selectedMare = mareSelect.value;
-    const selectedOwner = ownerSelect.value;
-    const sortMode = sortSelect.value;
+  // 🔹 Aktualisierung bei Änderungen
+  function updateResults() {
+    const mareName = mareSelect.value || null;
+    const ownerName = ownerSelect.value || null;
+    const sortOpt = sortSelect.value;
+    renderResults(mares, stallions, mareName, ownerName, sortOpt);
+  }
 
-    console.log(`🔀 Sortierung geändert: ${sortMode}`);
-    UI.showResults(selectedMare, selectedOwner, sortMode);
+  mareSelect.addEventListener("change", updateResults);
+  ownerSelect.addEventListener("change", updateResults);
+  sortSelect.addEventListener("change", updateResults);
+
+  allBtn.addEventListener("click", () => {
+    renderResults(mares, stallions, null, null, sortSelect.value);
   });
 
-  // --- Event: "Alle anzeigen" ---
-  showAllBtn.addEventListener("click", () => {
-    const sortMode = sortSelect.value;
-    console.log("📋 Alle anzeigen (Sortierung:", sortMode, ")");
-    UI.showResults("", "", sortMode);
-  });
+  // 🔹 Startanzeige
+  renderResults(mares, stallions, null, null, "range");
 });
